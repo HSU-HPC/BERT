@@ -206,7 +206,7 @@ compute_asw <- function(dataset){
   # numeric values in dataset only
   num_values <- dataset[,!names(dataset) %in% c("Batch", "Sample", "Label", "Cov_1")]
   # compute distance matrix based on euclidean distances, ignoring NAs
-  distancematrix <- dist(num_values)
+  distancematrix <- stats::dist(num_values)
   # compute silhouette object wrt. labels
   sil_labels <- cluster::silhouette(labels, dist=distancematrix)
   # extract ASW wrt. labels
@@ -228,8 +228,9 @@ compute_asw <- function(dataset){
 #' @return Integer indicating the number of numeric values
 #' @export
 count_existing <- function(dataset){
+  dataset_nocov <- dataset [ , !grepl( "Cov" , names( dataset  ) ) ]
   # select only numeric columns
-  num_values <- dataset[,!names(dataset) %in% c("Batch", "Sample", "Label", "Cov_1")]
+  num_values <- dataset_nocov[,!names(dataset_nocov) %in% c("Batch", "Sample", "Label")]
   # sum up non-missing values
   return(sum(!is.na(num_values)))
 }

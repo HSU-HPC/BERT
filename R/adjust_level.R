@@ -81,7 +81,6 @@ adjustment_step <- function(data, mod, combatmode, method) {
   adjusted_data <- foreach::foreach(i = iterators::iter(indices), .combine = rbind) %do% {
     # matrix / dataframe containing the adjusted data
     tempMatrix <- NULL
-    
     if (i == length(unique_batches)) {
       # odd number of batches and this is the last one
       tempMatrix <- data[data$Batch == unique_batches[i],]
@@ -91,7 +90,6 @@ adjustment_step <- function(data, mod, combatmode, method) {
     }
     # override batch description for the respectively adjusted batches
     tempMatrix["Batch"] <- i
-    
     # the adjusted data OR the single, unadjusted batch, if batch number is odd
     tempMatrix
   }

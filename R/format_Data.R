@@ -11,9 +11,14 @@
 format_DF <- function(data){
   logging::loginfo("Formatting Data.")
   
+  if(is.matrix(data)){
+    logging::loginfo("Typecasting input to dataframe.")
+    data <- data.frame(data)
+  }
+  
   logging::loginfo("Removing potential empty rows and columns")
   `%>%` <- janitor::`%>%`
-  data %>% janitor::remove_empty(c("rows", "cols"))
+  data <- data %>% janitor::remove_empty(c("rows", "cols"))
   
   # count number of missing values
   inital_mvs <- sum(is.na(data))
@@ -21,18 +26,18 @@ format_DF <- function(data){
   logging::loginfo(paste("Found ", inital_mvs, " missing values."))
   
   # all unique batch levels
-  unique_batches <- unique(data$Batch)
+  unique_batches <- unique(data[["Batch"]])
   
   # iterate over batches and remove numeric values, if a feature (e.g. protein)
   # does not contain at least 2 numeric values
   for(b in unique_batches){
     # data from batch b
-    data_batch <- data[data$Batch == b,]
+    data_batch <- data[data["Batch"] == b,]
     # logical with the features that can be adjusted (that is, contain more
     # than 2 numeric values in this batch)
     adjustable_batch <- get_adjustable_features(data_batch)
     # set features from this batch to missing, where adjustable_batch is FALSE
-    data[data$Batch == b, !adjustable_batch] <- NA
+    data[data["Batch"] == b, !adjustable_batch] <- NA
     
   }
   # count missing values

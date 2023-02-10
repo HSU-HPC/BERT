@@ -21,6 +21,7 @@
 #' 4              par.prior = FALSE, mean.only = TRUE
 #' Will be ignored, if method=="limma".
 #' @param method Adjustment method to use. Should either be \"ComBat\" or \"limma\".
+#' Also allows "None" for testing purposes, which will perform no BE adjustment
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
 #' @export

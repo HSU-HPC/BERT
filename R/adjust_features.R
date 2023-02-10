@@ -38,6 +38,8 @@ get_adjustable_features <- function(data_batch) {
 #' 4              par.prior = FALSE, mean.only = TRUE
 #' Will be ignored, if method=="limma".
 #' @param method Adjustment method to use. Should either be "ComBat" or "limma".
+#' "None" is also allowed for testing purposes and will yield no batch effect
+#' correction.
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by the specified method.
 adjust_node <- function(data, b1, b2, mod, combatmode, method) {
@@ -78,7 +80,7 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
   total_adjustable_data <- rbind(adjustable_data_b_1, adjustable_data_b_2)
   
   # same for the two dataframes with the covariates --> may stil be empty
-  total_mod <- rbind(mod_b_1, setNames(mod_b_2, names(mod_b_1)))
+  total_mod <- rbind(mod_b_1, stats::setNames(mod_b_2, names(mod_b_1)))
   
   # list with the respective batches
   batch_list <- total_adjustable_data[["Batch"]]
@@ -106,7 +108,6 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
   
   # the following if-statements use the respective adjustment method and
   # fill them into the total_data matrix
-  
   # if the covariate-dataframe is empty
   if(dim(mod)[2]==0){
     # if we use ComBat adjustment
@@ -115,6 +116,8 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
     }else if(method=="limma"){
       # if we use limma
       total_data[, names(total_adjustable_data)] <- suppressMessages(t(limma::removeBatchEffect(x = t(total_adjustable_data), batch = batch_list)))
+    }else if (method=="None"){
+      total_data[, names(total_adjustable_data)] <- total_adjustable_data
     }else{
       stop("Unknown adjustment method.")
     }
@@ -124,6 +127,8 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
         suppressMessages(t(sva::ComBat(dat = t(total_adjustable_data), batch = batch_list, mod=total_mod, par.prior = parprior, mean.only = meanonly)))
     }else if(method=="limma"){
       total_data[, names(total_adjustable_data)] <- suppressMessages(t(limma::removeBatchEffect(x = t(total_adjustable_data), batch = batch_list, design=total_mod)))
+    }else if (method=="None"){
+      total_data[, names(total_adjustable_data)] <- total_adjustable_data
     }else{
       stop("Unknown adjustment method.")
     }

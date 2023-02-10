@@ -22,7 +22,8 @@ default is 1.}
 4              par.prior = FALSE, mean.only = TRUE
 Will be ignored, if method=="limma".}
 
-\item{method}{Adjustment method to use. Should either be \"ComBat\" or \"limma\".}
+\item{method}{Adjustment method to use. Should either be \"ComBat\" or \"limma\".
+Also allows "None" for testing purposes, which will perform no BE adjustment}
 }
 \value{
 A matrix/dataframe mirroring the shape of the input. The data will
