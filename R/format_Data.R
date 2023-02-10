@@ -43,11 +43,13 @@ format_DF <- function(data){
     all_names <- all_names[dtypes=="character"]
   }
   
-  logging::logwarn(paste("Identified", length(all_names),
-                            "categorical variables among batch, label and all covariates. Note that BERT requiresinteger values there. Will apply ordinal encoding."))
-  
-  for(n in all_names){
-    data[, n] <- ordinal_encode(data[[n]])
+  if (length(all_names>0)){
+    logging::logwarn(paste("Identified", length(all_names),
+                              "categorical variables among batch, label and all covariates. Note that BERT requires integer values there. Will apply ordinal encoding."))
+    
+    for(n in all_names){
+      data[, n] <- ordinal_encode(data[[n]])
+    }
   }
   
   

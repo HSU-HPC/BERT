@@ -36,6 +36,7 @@ test_that("works with categorical batch", {
   y <- data.frame(y)
   y["Batch"] <- c("A", "A", "A", "B", "B", "B", "C", "C", "C")
   expect_error(format_DF(y), NA)
+  expect_true(all.equal(format_DF(y)[["Batch"]], ordinal_encode(y[["Batch"]])))
 })
 
 test_that("works with categorical label", {
@@ -44,6 +45,7 @@ test_that("works with categorical label", {
   y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
   y["Label"] <- c("A", "A", "A", "B", "B", "B", "C", "C", "C")
   expect_error(format_DF(y), NA)
+  expect_true(all.equal(format_DF(y)[["Label"]], ordinal_encode(y[["Label"]])))
 })
 
 test_that("works with categorical covariate", {
@@ -52,6 +54,7 @@ test_that("works with categorical covariate", {
   y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
   y["Cov_3"] <- c("A", "A", "A", "B", "B", "B", "C", "C", "C")
   expect_error(format_DF(y), NA)
+  expect_true(all.equal(format_DF(y)[["Cov_3"]], ordinal_encode(y[["Cov_3"]])))
 })
 
 test_that("ordinal encoding works", {
