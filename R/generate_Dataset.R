@@ -29,9 +29,9 @@ strip_Covariable <- function(dataset){
 #' @export
 generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes, housekeeping = NULL){
   # genewise offset
-  a <- rnorm(features, mean=0, sd=1)
+  a <- stats::rnorm(features, mean=0, sd=1)
   # condition-specific offset
-  bix <- matrix(unlist(rnorm(features*classes, mean=0, sd=1)), nrow=features, ncol=classes)
+  bix <- matrix(unlist(stats::rnorm(features*classes, mean=0, sd=1)), nrow=features, ncol=classes)
   # the class values we may have
   potential_classes <- 1:classes
   # randomly select the class labels for each sample, with equal probability!
@@ -49,12 +49,12 @@ generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes,
   # now add batch effects
   # add some normally distributed noise --> e.g. measurement error, epsilon in
   # L/S model
-  noise <- matrix(unlist(rnorm(features*batches*samplesperbatch, mean=0, sd=0.1)), nrow=batches*samplesperbatch, ncol=features)
+  noise <- matrix(unlist(stats::rnorm(features*batches*samplesperbatch, mean=0, sd=0.1)), nrow=batches*samplesperbatch, ncol=features)
   
   # iterate over batches
   for(b in unique(batchvector)){
     # additive batch effect, normally distributed
-    proteinshift <- rnorm(features, mean=0, sd=1)
+    proteinshift <- stats::rnorm(features, mean=0, sd=1)
     # multiplicative batch effect, inverse gamma
     proteinscale <- sqrt(invgamma::rinvgamma(features, shape=5, rate = 2))
     # for each sample in this batch
@@ -111,9 +111,9 @@ generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes,
 #' @export
 generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, imbalcov, housekeeping = NULL){
   # genewise offset
-  a <- rnorm(features, mean=0, sd=1)
+  a <- stats::rnorm(features, mean=0, sd=1)
   # condition-specific offset
-  bix <- matrix(unlist(rnorm(features*2, mean=0, sd=1)), nrow=features, ncol=2)
+  bix <- matrix(unlist(stats::rnorm(features*2, mean=0, sd=1)), nrow=features, ncol=2)
   # we only have two classes
   potential_classes <- 1:2
   # randomly select the class labels for each sample, with equal probability (here!)
@@ -125,7 +125,7 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
   for(b in unique(batchvector)){
     # for each batch, determine randomly, whether class 1 has probability imbalcov,
     # of class 2
-    if(rnorm(1)>0){
+    if(stats::rnorm(1)>0){
       prob1 <- imbalcov
     }else{
       prob1 <- 1-imbalcov
@@ -148,12 +148,12 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
   # now add batch effects
   # add some normally distributed noise --> e.g. measurement error, epsilon in
   # L/S model
-  noise <- matrix(unlist(rnorm(features*batches*samplesperbatch, mean=0, sd=0.1)), nrow=batches*samplesperbatch, ncol=features)
+  noise <- matrix(unlist(stats::rnorm(features*batches*samplesperbatch, mean=0, sd=0.1)), nrow=batches*samplesperbatch, ncol=features)
   
   # iterate over batches
   for(b in unique(batchvector)){
     # additive batch effect, normally distributed
-    proteinshift <- rnorm(features, mean=0, sd=1)
+    proteinshift <- stats::rnorm(features, mean=0, sd=1)
     # multiplicative batch effect, inverse gamma
     proteinscale <- sqrt(invgamma::rinvgamma(features, shape=5, rate = 2))
     # for each sample in this batch
@@ -199,22 +199,32 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
 #' and Batch respectively.
 #' @export
 compute_asw <- function(dataset){
-  # labels as vector
-  labels <- as.vector(dataset[["Label"]])
-  # batches as vector
-  batches <- as.vector(dataset[["Batch"]])
+  dataset_nocov <- dataset [ , !grepl( "Cov" , names( dataset  ) ) ]
   # numeric values in dataset only
-  num_values <- dataset[,!names(dataset) %in% c("Batch", "Sample", "Label", "Cov_1")]
+  num_values <- dataset_nocov[,!names(dataset_nocov) %in% c("Batch", "Sample", "Label", "Cov_1")]
   # compute distance matrix based on euclidean distances, ignoring NAs
   distancematrix <- stats::dist(num_values)
+  
+  if("Label" %in% names(dataset_nocov)){
+  # labels as vector
+  labels <- as.vector(dataset_nocov[["Label"]])
   # compute silhouette object wrt. labels
   sil_labels <- cluster::silhouette(labels, dist=distancematrix)
   # extract ASW wrt. labels
   asw_label <- summary(sil_labels)["avg.width"]$avg.width
+  }else{
+    asw_label <- NA
+  }
+  if("Batch" %in% names(dataset_nocov)){
+  # batches as vector
+  batches <- as.vector(dataset_nocov[["Batch"]])
   # compute silhouette object wrt. batches
   sil_batches <- cluster::silhouette(batches, dist=distancematrix)
   # extract ASW wrt. batches
   asw_batches <- summary(sil_batches)["avg.width"]$avg.width
+  }else{
+    asw_batches <- NA
+  }
   # create list object
   ret <- list("Label" = asw_label, "Batch" = asw_batches)
   return(ret)

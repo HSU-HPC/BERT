@@ -16,6 +16,8 @@ format_DF <- function(data){
     data <- data.frame(data)
   }
   
+  
+  
   logging::loginfo("Removing potential empty rows and columns")
   `%>%` <- janitor::`%>%`
   data <- data %>% janitor::remove_empty(c("rows", "cols"))

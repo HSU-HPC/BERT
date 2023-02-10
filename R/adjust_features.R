@@ -4,7 +4,7 @@
 #' This function will be called automatically be BERT n data from each batch
 #' independently.
 #'
-#' @param data Matrix or dataframe in the format (samples, features). 
+#' @param data_batch Matrix or dataframe in the format (samples, features). 
 #' Additional column names are "Batch", "Cov_X" (were X may be any number),
 #' "Label" and "Sample".
 #' @return A logical with TRUE for adjustable features and FALSE for features
