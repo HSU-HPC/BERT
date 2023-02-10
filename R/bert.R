@@ -51,12 +51,13 @@ hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="Com
     }
     # register parallel backend
     doParallel::registerDoParallel(cl)
-    loginfo("Done")
+    logging::loginfo("Done")
   }
   
   # store the original batches, because we need to manually set them again
   # after adjustment
-  original_batches <- data["Batch"]
+  original_batches <- data[["Batch"]]
+  original_rownames <- rownames(data)
   
   logging::loginfo("Starting hierarchical adjustment")
   
@@ -92,7 +93,7 @@ hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="Com
   # --- here, adjustment is finished
   
   # re-set the batch to the original values
-  data["Batch"] <- original_batches
+  data[original_rownames, "Batch"] <- original_batches
   
   # append covariates again
   if(dim(mod)[2]>1){
