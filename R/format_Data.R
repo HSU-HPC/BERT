@@ -1,3 +1,16 @@
+#' Ordinal encoding of a vector.
+#' 
+#'This function is usually called by BERT during formatting of the input.
+#'The idea is, that Label, Batch and Covariables
+#' @param column The categorical vector
+#' @return The encoded vector
+#' @export
+ordinal_encode <- function(column){
+  temp <- as.integer(factor(column, levels=unique(column)))
+  return(temp)
+}
+
+
 #' Format the data as expected by BERT.
 #'
 #'This function is called automatically by BERT. It removes empty columns
@@ -16,6 +29,26 @@ format_DF <- function(data){
     data <- data.frame(data)
   }
   
+  # get names of potential covariables
+  cov_names <- names(data)[grepl( "Cov" , names( data  ) )]
+  cat_names <- names(data)[names(data) %in% c("Label", "Batch")]
+  all_names <- c(cov_names, cat_names)
+  
+  if(length(all_names)==1){
+    if(!is.character(data[1, all_names])){
+      all_names <- character(0)
+    }
+  }else{
+    dtypes <- sapply(data[, all_names], typeof)
+    all_names <- all_names[dtypes=="character"]
+  }
+  
+  logging::logwarn(paste("Identified", length(all_names),
+                            "categorical variables among batch, label and all covariates. Note that BERT requiresinteger values there. Will apply ordinal encoding."))
+  
+  for(n in all_names){
+    data[, n] <- ordinal_encode(data[[n]])
+  }
   
   
   logging::loginfo("Removing potential empty rows and columns")
