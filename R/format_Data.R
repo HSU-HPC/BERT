@@ -32,7 +32,7 @@ format_DF <- function(data){
     # than 2 numeric values in this batch)
     adjustable_batch <- get_adjustable_features(data_batch)
     # set features from this batch to missing, where adjustable_batch is FALSE
-    data[data$Batch == b, !adjustable_batch] <- NaN
+    data[data$Batch == b, !adjustable_batch] <- NA
     
   }
   # count missing values
