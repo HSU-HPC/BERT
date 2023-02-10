@@ -74,6 +74,9 @@ adjustment_step <- function(data, mod, combatmode, method) {
   # indices for every second batch
   indices <- seq(1, length(unique_batches), by = 2)
   
+  # define do in this namespace
+  `%do%` <- foreach::`%do%`
+  
   # adjust the data at this hierarchy level
   adjusted_data <- foreach::foreach(i = iterators::iter(indices), .combine = rbind) %do% {
     # matrix / dataframe containing the adjusted data
