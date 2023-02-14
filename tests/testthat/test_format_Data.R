@@ -96,3 +96,13 @@ test_that("Formatting will use get_adjustable_features_with_mod, if covariables 
   formatted_df <- format_DF(mat)
   expect_equal(all(is.na(formatted_df[,1])), TRUE)
 })
+
+test_that("Formatting will use get_adjustable_features, if no covariables are present", {
+  mat <- matrix(rnorm(5*5), nrow=5, ncol=5)
+  mat <- data.frame(mat)
+  mat["Batch"] <- c(1,1,1,1,1)
+  mat[1,4] <- NA
+  mat[4,1] <- NA
+  formatted_df <- format_DF(mat)
+  expect_true(all.equal(mat, formatted_df))
+})

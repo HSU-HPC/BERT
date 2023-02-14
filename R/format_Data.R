@@ -102,7 +102,7 @@ format_DF <- function(data){
   # count missing values
   final_mvs <- sum(is.na(data))
   
-  logging::loginfo(paste("Introduced ", final_mvs-inital_mvs, " missing values due to singular proteins in batches."))
+  logging::loginfo(paste("Introduced ", final_mvs-inital_mvs, " missing values due to singular proteins at batch/covariate level."))
   logging::loginfo("Done")
   
   return(data)
