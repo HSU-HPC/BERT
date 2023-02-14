@@ -1,13 +1,24 @@
 #' Ordinal encoding of a vector.
 #' 
 #'This function is usually called by BERT during formatting of the input.
-#'The idea is, that Label, Batch and Covariables
+#'The idea is, that Label, Batch and Covariables should only be integers
 #' @param column The categorical vector
 #' @return The encoded vector
 #' @export
 ordinal_encode <- function(column){
   temp <- as.integer(factor(column, levels=unique(column)))
   return(temp)
+}
+
+#' Replaces missing values (NaN) by NA, this appears to be faster
+#' 
+#' @param column The data as dataframe
+#' @return The data with the replaced MVs
+#' @export
+replace_missing <- function(data){
+  data[sapply(data, is.nan)] <- NA
+  data[is.null(data)] <- NA
+  return(data)
 }
 
 
@@ -28,6 +39,9 @@ format_DF <- function(data){
     logging::loginfo("Typecasting input to dataframe.")
     data <- data.frame(data)
   }
+  
+  logging::loginfo("Replacing NaNs with NAs.")
+  data <- replace_missing(data)
   
   # get names of potential covariables
   cov_names <- names(data)[grepl( "Cov" , names( data  ) )]
@@ -65,14 +79,22 @@ format_DF <- function(data){
   # all unique batch levels
   unique_batches <- unique(data[["Batch"]])
   
+  # select covariates
+  mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
+  
   # iterate over batches and remove numeric values, if a feature (e.g. protein)
   # does not contain at least 2 numeric values
   for(b in unique_batches){
     # data from batch b
     data_batch <- data[data["Batch"] == b,]
+    mod_batch <- mod[data["Batch"] == b,]
     # logical with the features that can be adjusted (that is, contain more
-    # than 2 numeric values in this batch)
-    adjustable_batch <- get_adjustable_features(data_batch)
+    # than 2 numeric values in this batch/covariate level)
+    if(dim(mod)[2]==0){
+      adjustable_batch <- get_adjustable_features(data_batch)
+    }else{
+      adjustable_batch <- get_adjustable_features_with_mod(data_batch, data.frame(mod_batch))
+    }
     # set features from this batch to missing, where adjustable_batch is FALSE
     data[data["Batch"] == b, !adjustable_batch] <- NA
     

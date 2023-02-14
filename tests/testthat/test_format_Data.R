@@ -64,3 +64,35 @@ test_that("ordinal encoding works", {
   expect_true(all.equal(expected, enc))
 })
 
+test_that("NaNs are replaced correctly", {
+  mat <- matrix(rnorm(5*20), nrow = 5, ncol=20)
+  mat <- data.frame(mat)
+  mat[5, 7] <- NaN
+  mat_rep <- replace_missing(mat)
+  expect_true(is.na(mat_rep[5,7]))
+  expect_true(!is.nan(mat_rep[5,7]))
+  expect_equal(sum(is.na(mat_rep)), 1)
+})
+
+test_that("Formatting calls NaN replacement function", {
+  mat <- matrix(rnorm(5*20), nrow = 5, ncol=20)
+  mat <- data.frame(mat)
+  mat["Batch"] <- c(1,1,2,2,2)
+  mat[5, 7] <- NaN
+  mat_rep <- format_DF(mat)
+  expect_true(is.na(mat_rep[5,7]))
+  expect_true(!is.nan(mat_rep[5,7]))
+  expect_equal(sum(is.na(mat_rep)), 1)
+})
+
+
+test_that("Formatting will use get_adjustable_features_with_mod, if covariables are present", {
+  mat <- matrix(rnorm(5*5), nrow=5, ncol=5)
+  mat <- data.frame(mat)
+  mat["Batch"] <- c(1,1,1,1,1)
+  mat["Cov_1"] <- c(1,1,1,2,2)
+  mat[1,4] <- NA
+  mat[4,1] <- NA
+  formatted_df <- format_DF(mat)
+  expect_equal(all(is.na(formatted_df[,1])), TRUE)
+})

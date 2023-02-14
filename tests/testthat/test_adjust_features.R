@@ -25,3 +25,31 @@ test_that("only combat modes 1-4 are allowed", {
   expect_error(adjust_node(y, 1, 2, mod, "invalid mode", "ComBat"))
 })
 
+test_that("selection of adjustable features works with covariables (1 covariate)", {
+  mat <- matrix(rnorm(5*5), nrow=5, ncol=5)
+  mat <- data.frame(mat)
+  mat["Batch"] <- c(1,1,1,1,1)
+  mat["Cov_1"] <- c(1,1,1,2,2)
+  mat["Cov_2"] <- c(1,1,1,2,2)
+  mat[1,4] <- NA
+  mat[4,1] <- NA
+  mod <- data.frame(mat [ , grepl( "Cov" , names( mat  ) ) ])
+  mat <- mat [ , !grepl( "Cov" , names( mat  ) ) ]
+  adjustable <- c(FALSE, TRUE, TRUE, TRUE, TRUE, TRUE)
+  computed_adjustable <- as.vector(get_adjustable_features_with_mod(mat, mod))
+  expect_true(all.equal(adjustable, computed_adjustable))
+})
+
+test_that("selection of adjustable features works with covariables (1 covariate)", {
+  mat <- matrix(rnorm(5*5), nrow=5, ncol=5)
+  mat <- data.frame(mat)
+  mat["Batch"] <- c(1,1,1,1,1)
+  mat["Cov_1"] <- c(1,1,1,2,2)
+  mat[1,4] <- NA
+  mat[4,1] <- NA
+  mod <- data.frame(mat [ , grepl( "Cov" , names( mat  ) ) ])
+  mat <- mat [ , !grepl( "Cov" , names( mat  ) ) ]
+  adjustable <- c(FALSE, TRUE, TRUE, TRUE, TRUE, TRUE)
+  computed_adjustable <- as.vector(get_adjustable_features_with_mod(mat, mod))
+  expect_true(all.equal(adjustable, computed_adjustable))
+})

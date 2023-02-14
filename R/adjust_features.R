@@ -20,6 +20,44 @@ get_adjustable_features <- function(data_batch) {
   
 }
 
+
+#' Check, which features contain enough numeric data to be adjusted (at least
+#' 2 numeric values per batch and covariate level)
+#'
+#' This function will be called automatically be BERT n data from each batch
+#' independently.
+#'
+#' @param data_batch Matrix or dataframe in the format (samples, features). 
+#' Additional column names are "Batch", "Cov_X" (were X may be any number),
+#' "Label" and "Sample".
+#' @param mod_batch Matrix or dataframe in the format (samples, covariates). 
+#' Contains only the covariates as covariates.
+#' @return A logical with TRUE for adjustable features and FALSE for features
+#' with too many missing values.
+#' @export
+get_adjustable_features_with_mod <- function(data_batch, mod_batch) {
+  # unique covs
+  uniques <- unique(mod_batch)
+  
+  # default true
+  available_features <- seq(TRUE, TRUE, length.out=dim(data_batch)[2])
+  
+  for(u_idx in 1:dim(uniques)[1]){
+    # the respective unique comb. of covariables
+    u <- uniques[u_idx, ]
+    # samples to select
+    cor <- apply(mod_batch, 1, function(x, y) x==y, u)
+    if(dim(mod_batch)[2]!=1){
+      cor <- apply(cor, 2, function(x) Reduce("&", x))
+    }
+    # apply normal function
+    available_features <- available_features & get_adjustable_features(data_batch[cor,])
+  }
+  
+  return(available_features)
+  
+}
+
 #' Adjust two batches to each other.
 #'
 #' This function is called by the BERT algorithm and should not be called by
@@ -58,8 +96,15 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
   mod_b_2 <- data.frame(mod[data$Batch == b2,])
   
   # get adjustable features
-  av_b1 <- get_adjustable_features(data_b_1)
-  av_b2 <- get_adjustable_features(data_b_2)
+  if(dim(mod)[2]==0){
+    # no covariates
+    av_b1 <- get_adjustable_features(data_b_1)
+    av_b2 <- get_adjustable_features(data_b_2)
+  }else{
+    # covariates
+    av_b1 <- get_adjustable_features_with_mod(data_b_1, mod_b_1)
+    av_b2 <- get_adjustable_features_with_mod(data_b_2, mod_b_2)
+  }
   
   # we can only adjust features, which are adjustable for both batches
   # if something is not adjustable, that means the feature is missing
