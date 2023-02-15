@@ -11,11 +11,16 @@
 #' with too many missing values.
 #' @export
 get_adjustable_features <- function(data_batch) {
+  # should have at least 2 samples -> otherwise, we don't have enough samples at this
+  # batch/covariate level
+  if(dim(data_batch)[1]<=1){
+    logging::logerror("Not enough samples at batch/covariate level.")
+    stop("Fatal error.")
+  }
   # get the numeric data (boolean)
   available_data <- !is.na(data_batch)
   # add the booleans per column (per feature)--> counts of numeric values
   available_data <- colSums(available_data)
-  
   return(available_data > 1)
   
 }

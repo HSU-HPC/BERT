@@ -53,3 +53,10 @@ test_that("selection of adjustable features works with covariables (1 covariate)
   computed_adjustable <- as.vector(get_adjustable_features_with_mod(mat, mod))
   expect_true(all.equal(adjustable, computed_adjustable))
 })
+
+test_that("BERT stops, if not enough samples from batch/covariate level", {
+  mat <- matrix(rnorm(1*5), nrow=1, ncol=5)
+  mat <- data.frame(mat)
+  mat["Batch"] <- c(1)
+  expect_error(get_adjustable_features(mat))
+})
