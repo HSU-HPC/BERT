@@ -106,3 +106,15 @@ test_that("Formatting will use get_adjustable_features, if no covariables are pr
   formatted_df <- format_DF(mat)
   expect_true(all.equal(mat, formatted_df))
 })
+
+test_that("Formatting preserves names, if input was matrix", {
+  y <- matrix(rnorm(10*9),9,10)
+  y <- data.frame(y)
+  y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
+  y <- as.matrix(y)
+  rownames(y) <- c("A","B","C","D","E","F","G","H","I")
+  colnames(y) <- c("A1","B2","C3","D4","E5","F6","G7","H8","I9","J10", "Batch")
+  formatted_df <- format_DF(y)
+  expect_true(all.equal(rownames(y), rownames(formatted_df)))
+  expect_true(all.equal(colnames(y), colnames(formatted_df)))
+})
