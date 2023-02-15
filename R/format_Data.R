@@ -82,6 +82,10 @@ format_DF <- function(data){
   # select covariates
   mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
   
+  if(dim(mod)[2]!=0){
+    logging::loginfo("BERT requires at least 2 numeric values per batch/covariate level. This may reduce the number of adjustable features considerably, depending on the quantification technique.")
+  }
+  
   # iterate over batches and remove numeric values, if a feature (e.g. protein)
   # does not contain at least 2 numeric values
   for(b in unique_batches){

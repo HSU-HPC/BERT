@@ -4,12 +4,12 @@
 #' batch effects. It assumes that the data is in the format
 #' (samples, features) and that missing values are indicated by NA.
 #' An additional column labelled "Batch" should indicate the batch. Furthermore
-#' all columns named \"Cov_1\", \"Cov_2\", ... will be considered as covariate
+#' all columns named "Cov_1", "Cov_2", ... will be considered as covariate
 #' for adjustment. Columns labelled "Label" and "Sample" will be ignored,
 #' all other columns are assumed to contain data.
 #'
 #' @param data Matrix or dataframe in the format (samples, features). 
-#' Additional column names are \"Batch\", \"Cov_X\" (were X may be any number),
+#' Additional column names are "Batch", "Cov_X" (were X may be any number),
 #' "Label" and "Sample".
 #' @param cores The number of cores to use for parallel adjustment. Increasing
 #' this number leads to faster adjustment, especially on Linux machines. The
@@ -20,7 +20,7 @@
 #' 3              par.prior = FALSE, mean.only = FALSE
 #' 4              par.prior = FALSE, mean.only = TRUE
 #' Will be ignored, if method=="limma".
-#' @param method Adjustment method to use. Should either be \"ComBat\" or \"limma\".
+#' @param method Adjustment method to use. Should either be "ComBat" or "limma".
 #' Also allows "None" for testing purposes, which will perform no BE adjustment
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
