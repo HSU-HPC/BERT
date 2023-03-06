@@ -21,16 +21,25 @@
 #' 4              par.prior = FALSE, mean.only = TRUE
 #' Will be ignored, if method=="limma".
 #' @param method Adjustment method to use. Should either be "ComBat" or "limma".
+#' @param qualitycontrol Boolean indicating, whether ASWs should be computed before
+#' and after batch effect adjustment. If TRUE, will compute ASW with respect to
+#' the "Batch" and "Label" column (if existent).
 #' Also allows "None" for testing purposes, which will perform no BE adjustment
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
 #' @export
-hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="ComBat") {
+hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontrol=TRUE) {
   # measure starting time
   total_start <- Sys.time()
   
   # format dataframe
   data <- format_DF(data)
+  
+  # compute ASWs, if required
+  if(qualitycontrol){
+    logging::loginfo("Acquiring quality metrics before batch effect correction.")
+    asws_prior = compute_asw(data)
+  }
   
   # split covariates from remaining data
   mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
@@ -114,6 +123,24 @@ hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="Com
     parallel::stopCluster(cl)
     logging::loginfo("Done")
   }
+  
+  # compute ASWs, if required
+  if(qualitycontrol){
+    logging::loginfo("Acquiring quality metrics after batch effect correction.")
+    asws_after = compute_asw(data)
+    
+    # batch information
+    if(!is.na(asws_prior$Batch)){
+      logging::loginfo(paste("ASW Batch was", asws_prior$Batch, "prior to batch effect correction and is now", asws_after$Batch,"."))
+    }
+    # label information
+    if(!is.na(asws_prior$Label)){
+      logging::loginfo(paste("ASW Label was", asws_prior$Label, "prior to batch effect correction and is now", asws_after$Label,"."))
+    }
+  }
+  
+  
+  
   # stop total timing measurement
   total_end <- Sys.time()
   
@@ -124,6 +151,7 @@ hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="Com
   
   
   logging::loginfo(paste("Total function execution time is ",execution_time," s and adjustment time is ",adjustment_time,"s (",round(100 * as.numeric(adjustment_time) / as.numeric(execution_time),digits = 2),")"))
+  
   return(data)
   
 }
