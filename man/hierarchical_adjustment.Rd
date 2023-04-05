@@ -4,7 +4,15 @@
 \alias{hierarchical_adjustment}
 \title{Adjust data using the BERT algorithm.}
 \usage{
-hierarchical_adjustment(data, cores = 1, combatmode = 1, method = "ComBat")
+hierarchical_adjustment(
+  data,
+  cores = 1,
+  combatmode = 1,
+  method = "ComBat",
+  qualitycontrol = TRUE,
+  verify = TRUE,
+  mpi = FALSE
+)
 }
 \arguments{
 \item{data}{Matrix or dataframe in the format (samples, features).
@@ -22,7 +30,16 @@ default is 1.}
 4              par.prior = FALSE, mean.only = TRUE
 Will be ignored, if method=="limma".}
 
-\item{method}{Adjustment method to use. Should either be "ComBat" or "limma".
+\item{method}{Adjustment method to use. Should either be "ComBat" or "limma".}
+
+\item{qualitycontrol}{Boolean indicating, whether ASWs should be computed before
+and after batch effect adjustment. If TRUE, will compute ASW with respect to
+the "Batch" and "Label" column (if existent).}
+
+\item{verify}{Whether the input matrix/dataframe needs to be verified befire adjustment
+(faster if FALSE)}
+
+\item{mpi}{Whether to use MPI for inter-node parallelization.
 Also allows "None" for testing purposes, which will perform no BE adjustment}
 }
 \value{

@@ -24,16 +24,26 @@
 #' @param qualitycontrol Boolean indicating, whether ASWs should be computed before
 #' and after batch effect adjustment. If TRUE, will compute ASW with respect to
 #' the "Batch" and "Label" column (if existent).
+#' @param verify Whether the input matrix/dataframe needs to be verified befire adjustment
+#' (faster if FALSE)
+#' @param mpi Whether to use MPI for inter-node parallelization.
 #' Also allows "None" for testing purposes, which will perform no BE adjustment
+#' @param stopParLevel Whether to stop parallelization at a certain hierarchy level. 
+#' FALSE by default. If integer, BERT will execute sequentially for all hierarchy levels
+#' >= stopParLevel to avoid communication overhead.
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
 #' @export
-hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontrol=TRUE) {
+hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontrol=TRUE, verify=TRUE, mpi=FALSE, stopParLevel = FALSE) {
   # measure starting time
   total_start <- Sys.time()
   
   # format dataframe
-  data <- format_DF(data)
+  if(verify){
+    data <- format_DF(data)
+  }else{
+    logging::loginfo("Skipping initial DF formatting")
+  }
   
   # compute ASWs, if required
   if(qualitycontrol){
@@ -46,7 +56,12 @@ hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="Com
   data <- data [ , !grepl( "Cov" , names( data  ) ) ]
   logging::loginfo(paste("Found ", dim(mod)[2], "covariates"))
   
-  if (cores > 1) {
+  if(mpi){
+    logging::loginfo("Starting MPI cluser.")
+    cl <- doMPI::startMPIcluster()
+    doMPI::registerDoMPI(cl)
+    logging::loginfo("Done")
+  } else if (cores > 1) {
     # recommended only on linux
     logging::loginfo(paste("Setting up cluster with ", cores, " cores."))
     if (.Platform$OS.type == "windows") {
@@ -79,6 +94,12 @@ hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="Com
   num_batches <- dim(unique(data["Batch"]))[1]
   logging::loginfo(paste("Found ", num_batches, " batches."))
   
+  # make stopParLevel an integer, if it is FALSE. Important: still needs
+  # to parallelize everything
+  if(stopParLevel==FALSE){
+    stopParLevel <- num_batches
+  }
+  
   # counter for the hierarchy levels
   hierarchy_counter <- 1
   
@@ -86,7 +107,7 @@ hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="Com
   while (num_batches > 1) {
     logging::loginfo(paste("Adjusting Hierarchy Level ", hierarchy_counter, ": ", num_batches, " Batches"))
     # if we use parallelization
-    if (cores > 1) {
+    if ((cores > 1) && (hierarchy_counter < stopParLevel)) {
       # do adjustment step in parallel
       data <- adjustment_step_parallel(data, mod, combatmode, method)
     } else{
@@ -118,7 +139,11 @@ hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="Com
   logging::loginfo("Done")
   
   # stop cluster
-  if (cores > 1) {
+  if(mpi){
+    doMPI::closeCluster(cl)
+    Rmpi::mpi.finalize()
+    logging::loginfo("Done")
+  }else if (cores > 1) {
     logging::loginfo("Stopping cluster gracefully.")
     parallel::stopCluster(cl)
     logging::loginfo("Done")

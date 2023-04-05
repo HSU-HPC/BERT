@@ -7,6 +7,13 @@ test_that("dataset not corrupted without adjustment", {
   expect_true(all.equal(y, y_adjusted[rownames(y), colnames(y)]))
 })
 
+test_that("bert works for simulated data without any formatting of the input", {
+  # generate dataset, 9 samples, 10 features
+  y <- generateDataset(100,5,10,0.1,2)
+  y_adjusted <- hierarchical_adjustment(y, method="None", verify=FALSE)
+  expect_true(all.equal(y, y_adjusted[rownames(y), colnames(y)]))
+})
+
 test_that("works equally with dataframes and matrices", {
   # generate dataset, 9 samples, 10 features
   y <- matrix(rnorm(10*9),9,10)

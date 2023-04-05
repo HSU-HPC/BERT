@@ -12,7 +12,7 @@ ordinal_encode <- function(column){
 
 #' Replaces missing values (NaN) by NA, this appears to be faster
 #' 
-#' @param column The data as dataframe
+#' @param data The data as dataframe
 #' @return The data with the replaced MVs
 #' @export
 replace_missing <- function(data){

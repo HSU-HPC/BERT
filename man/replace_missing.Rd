@@ -7,7 +7,7 @@
 replace_missing(data)
 }
 \arguments{
-\item{column}{The data as dataframe}
+\item{data}{The data as dataframe}
 }
 \value{
 The data with the replaced MVs

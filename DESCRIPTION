@@ -23,7 +23,9 @@ Imports:
     logging (>= 0.10-108),
     lubridate (>= 1.8.0),
     parallel,
-    sva (>= 3.38.0)
+    sva (>= 3.38.0),
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    doMPI,
+    Rmpi
 Config/testthat/edition: 3
