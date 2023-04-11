@@ -149,6 +149,9 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #' be batch-effect adjusted by BERT.
 #' @export
 BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontrol=TRUE, verify=TRUE, mpi=FALSE, stopParBatches = 4, corereduction=4, backend="default"){
+  # store original cores
+  original_cores <- cores
+  
   # measure starting time
   total_start <- Sys.time()
   
@@ -250,7 +253,7 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontro
     doMPI::closeCluster(cl)
     Rmpi::mpi.finalize()
     logging::loginfo("Done")
-  }else if (cores > 1) {
+  }else if (original_cores > 1) {
     logging::loginfo("Stopping cluster gracefully.")
     parallel::stopCluster(cl)
     logging::loginfo("Done")
