@@ -38,7 +38,7 @@ adjustment_step_parallel <- function(data, mod, combatmode, method) {
       tempMatrix <- adjust_node(data, unique_batches[i], unique_batches[i + 1], mod, combatmode, method)
     }
     # override batch description for the respectively adjusted batches
-    tempMatrix["Batch"] <- i
+    tempMatrix["Batch"] <- unique_batches[i]
     
     # the adjusted data OR the single, unadjusted batch, if batch number is odd
     tempMatrix
@@ -89,7 +89,7 @@ adjustment_step <- function(data, mod, combatmode, method) {
       tempMatrix <- adjust_node(data, unique_batches[i], unique_batches[i + 1], mod, combatmode, method)
     }
     # override batch description for the respectively adjusted batches
-    tempMatrix["Batch"] <- i
+    tempMatrix["Batch"] <- unique_batches[i]
     # the adjusted data OR the single, unadjusted batch, if batch number is odd
     tempMatrix
   }
