@@ -148,7 +148,7 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
 #' @export
-BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontrol=TRUE, verify=TRUE, mpi=FALSE, stopParBatches = 4, corereduction=4, backend="default"){
+BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontrol=TRUE, verify=TRUE, mpi=FALSE, stopParBatches = 4, corereduction=2, backend="default"){
   # store original cores
   original_cores <- cores
   
