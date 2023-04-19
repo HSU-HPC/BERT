@@ -13,7 +13,7 @@ BERT(
   verify = TRUE,
   mpi = FALSE,
   stopParBatches = 4,
-  corereduction = 4,
+  corereduction = 2,
   backend = "default"
 )
 }

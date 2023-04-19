@@ -41,7 +41,7 @@ the "Batch" and "Label" column (if existent).}
 (faster if FALSE)}
 
 \item{mpi}{Whether to use MPI for inter-node parallelization.
-Also allows "None" for testing purposes, which will perform no BE adjustment}
+Also allows None for testing purposes, which will perform no BE adjustment}
 
 \item{stopParLevel}{Whether to stop parallelization at a certain hierarchy level.
 FALSE by default. If integer, BERT will execute sequentially for all hierarchy levels= stopParLevel to avoid communication overhead.}

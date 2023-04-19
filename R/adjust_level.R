@@ -25,7 +25,7 @@ adjustment_step_parallel <- function(data, mod, combatmode, method) {
   
   # define dopar in this namespace
   `%dopar%` <- foreach::`%dopar%`
-  
+  i <- NULL
   # adjust the data at this hierarchy level
   adjusted_data <-foreach::foreach(i = iterators::iter(indices),.combine = rbind, .export = c("get_adjustable_features", "adjust_node")) %dopar% {
     # matrix / dataframe containing the adjusted data
@@ -76,7 +76,7 @@ adjustment_step <- function(data, mod, combatmode, method) {
   
   # define do in this namespace
   `%do%` <- foreach::`%do%`
-  
+  i <- NULL
   # adjust the data at this hierarchy level
   adjusted_data <- foreach::foreach(i = iterators::iter(indices), .combine = rbind) %do% {
     # matrix / dataframe containing the adjusted data

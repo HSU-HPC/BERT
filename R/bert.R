@@ -57,6 +57,7 @@ chunk_data <- function(data, n, backend="default"){
 #'@export
 parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="default"){
   `%dopar%` <- foreach::`%dopar%`
+  chunk <- NULL
   # parallel adjustment as far as possible for this chunk
   adjusted_data <- foreach::foreach(chunk=iterators::iter(chunks), .combine = rbind) %dopar% {
     if(backend=="file"){
@@ -169,7 +170,7 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontro
   }
   
   if(mpi){
-    logging::loginfo("Starting MPI cluser.")
+    logging::loginfo("Starting MPI cluster.")
     cl <- doMPI::startMPIcluster()
     doMPI::registerDoMPI(cl)
     logging::loginfo("Done")
@@ -316,7 +317,7 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontro
 #' @param verify Whether the input matrix/dataframe needs to be verified befire adjustment
 #' (faster if FALSE)
 #' @param mpi Whether to use MPI for inter-node parallelization.
-#' Also allows "None" for testing purposes, which will perform no BE adjustment
+#' Also allows None for testing purposes, which will perform no BE adjustment
 #' @param stopParLevel Whether to stop parallelization at a certain hierarchy level. 
 #' FALSE by default. If integer, BERT will execute sequentially for all hierarchy levels
 #' >= stopParLevel to avoid communication overhead.
@@ -346,7 +347,7 @@ hierarchical_adjustment <- function(data, cores = 1, combatmode = 1, method="Com
   logging::loginfo(paste("Found ", dim(mod)[2], "covariates"))
   
   if(mpi){
-    logging::loginfo("Starting MPI cluser.")
+    logging::loginfo("Starting MPI cluster.")
     cl <- doMPI::startMPIcluster()
     doMPI::registerDoMPI(cl)
     logging::loginfo("Done")
