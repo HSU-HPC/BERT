@@ -120,7 +120,7 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #'
 #' @param data Matrix or dataframe in the format (samples, features). 
 #' Additional column names are "Batch", "Cov_X" (were X may be any number),
-#' "Label" and "Sample".
+#' "Label", "Sample" and "Reference".
 #' @param cores The number of cores to use for parallel adjustment. Increasing
 #' this number leads to faster adjustment, especially on Linux machines. The
 #' default is 1.
@@ -130,7 +130,8 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #' 3              par.prior = FALSE, mean.only = FALSE
 #' 4              par.prior = FALSE, mean.only = TRUE
 #' Will be ignored, if method=="limma".
-#' @param method Adjustment method to use. Should either be "ComBat" or "limma".
+#' @param method Adjustment method to use. Should either be "ComBat", "limma"
+#' or "ref"
 #' @param qualitycontrol Boolean indicating, whether ASWs should be computed before
 #' and after batch effect adjustment. If TRUE, will compute ASW with respect to
 #' the "Batch" and "Label" column (if existent).

@@ -10,6 +10,29 @@ ordinal_encode <- function(column){
   return(temp)
 }
 
+#' Verify that the Reference column of the data contains only zeros and ones
+#' (if it is present at all)
+#' @param data the dataframe for this batch (samples in rows, samples in columns)
+#' @return either TRUE (everything correct) or FALSE (something is not correct)
+#' @export
+verify_references <- function(batch){
+  if ("Reference" %in% names(batch)){
+    # no missing values
+    if(any(is.na(batch$Reference))){
+      logging::loginfo("Found NA in Reference column")
+      return(FALSE)
+    }
+    is_ref <- batch$Reference!=0
+    if(sum(is_ref)>1){
+      return(TRUE)
+    }else{
+      logging::logerror("Require at least two references per batch.")
+      return(FALSE)
+    }
+  }
+  return(TRUE)
+}
+
 #' Replaces missing values (NaN) by NA, this appears to be faster
 #' 
 #' @param data The data as dataframe
@@ -101,12 +124,17 @@ format_DF <- function(data){
     }
     # set features from this batch to missing, where adjustable_batch is FALSE
     data[data["Batch"] == b, !adjustable_batch] <- NA
-    
+    # require at least two references per batch
+    if(!verify_references(data_batch)){
+      logging::logerror(paste("Reference column error in batch"), b)
+      stop()
+    }
   }
   # count missing values
   final_mvs <- sum(is.na(data))
   
   logging::loginfo(paste("Introduced ", final_mvs-inital_mvs, " missing values due to singular proteins at batch/covariate level."))
+  
   logging::loginfo("Done")
   
   return(data)

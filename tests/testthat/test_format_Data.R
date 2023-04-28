@@ -9,6 +9,34 @@ test_that("removes unadjustable numeric values", {
   expect_true(is.na(y_formatted[3,1]))
 })
 
+test_that("correctly formatted Reference column is recognized as such",{
+  y <- matrix(rnorm(10*9),10,9)
+  y <- data.frame(y)
+  y["Reference"] <- c(1,1,2,2,0,1,1,2,2,0)
+  #y["Batch"] <- c(1,1,1,1,1,0,0,0,0,0)
+  expect_true(verify_references(y))
+})
+
+test_that("correctly missing Reference column is ok",{
+  y <- matrix(rnorm(10*9),9,10)
+  y <- data.frame(y)
+  expect_true(verify_references(y))
+})
+
+test_that("MVs in reference columns are recognized",{
+  y <- matrix(rnorm(10*9),9,10)
+  y <- data.frame(y)
+  y["Reference"] <- c(1,NA,1,2,1,0,1,1,1)
+  expect_true(!verify_references(y))
+})
+
+test_that("recognizes too low number of references",{
+  y <- matrix(rnorm(10*9),9,10)
+  y <- data.frame(y)
+  y["Reference"] <- c(0,0,0,0,0,0,0,0,1)
+  expect_true(!verify_references(y))
+})
+
 test_that("removes empty columns", {
   # generate dataset, 9 samples, 10 features
   y <- matrix(rnorm(10*9),9,10)

@@ -85,69 +85,31 @@ test_that("parallel_bert works with file communication backend",{
 })
 
 
-test_that("dataset not corrupted without adjustment -- hierarchical_adjustment", {
-  # generate dataset, 9 samples, 10 features
-  y <- matrix(rnorm(10*9),9,10)
-  y <- data.frame(y)
-  y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
-  y_adjusted <- hierarchical_adjustment(y, method="None")
-  expect_true(all.equal(y, y_adjusted[rownames(y), colnames(y)]))
-})
-
 test_that("dataset not corrupted without adjustment -- BERT", {
   # generate dataset, 9 samples, 10 features
   y <- matrix(rnorm(10*9),9,10)
   y <- data.frame(y)
   y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
-  y_adjusted <- hierarchical_adjustment(y, method="None")
-  expect_true(all.equal(y, y_adjusted[rownames(y), colnames(y)]))
-})
-
-test_that("bert works for simulated data without any formatting of the input -- hierarchical_adjustment", {
-  # generate dataset, 9 samples, 10 features
-  y <- generateDataset(100,5,10,0.1,2)
-  y_adjusted <- hierarchical_adjustment(y, method="None", verify=FALSE)
+  y_adjusted <- BERT(y, method="None")
   expect_true(all.equal(y, y_adjusted[rownames(y), colnames(y)]))
 })
 
 test_that("bert works for simulated data without any formatting of the input -- BERT", {
   # generate dataset, 9 samples, 10 features
   y <- generateDataset(100,5,10,0.1,2)
-  y_adjusted <- hierarchical_adjustment(y, method="None", verify=FALSE)
+  y_adjusted <- BERT(y, method="None", verify=FALSE)
   expect_true(all.equal(y, y_adjusted[rownames(y), colnames(y)]))
 })
 
-test_that("works equally with dataframes and matrices -- hierarchical_adjustment", {
-  # generate dataset, 9 samples, 10 features
-  y <- matrix(rnorm(10*9),9,10)
-  y <- data.frame(y)
-  y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
-  y_adjusted_df <- hierarchical_adjustment(y, method="None")
-  y_adjusted_mat <- hierarchical_adjustment(as.matrix(y), method="None")
-  expect_true(all.equal(y_adjusted_df, y_adjusted_mat[rownames(y_adjusted_df), colnames(y_adjusted_df)]))
-})
 
 test_that("works equally with dataframes and matrices -- BERT", {
   # generate dataset, 9 samples, 10 features
   y <- matrix(rnorm(10*9),9,10)
   y <- data.frame(y)
   y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
-  y_adjusted_df <- hierarchical_adjustment(y, method="None")
-  y_adjusted_mat <- hierarchical_adjustment(as.matrix(y), method="None")
+  y_adjusted_df <- BERT(y, method="None")
+  y_adjusted_mat <- BERT(as.matrix(y), method="None")
   expect_true(all.equal(y_adjusted_df, y_adjusted_mat[rownames(y_adjusted_df), colnames(y_adjusted_df)]))
-})
-
-test_that("BERT preserves rownames and column names -- hierarchical adjustment", {
-  # generate dataset, 9 samples, 10 features
-  y <- matrix(rnorm(10*9),9,10)
-  y <- data.frame(y)
-  y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
-  y <- as.matrix(y)
-  rownames(y) <- c("A","B","C","D","E","F","G","H","I")
-  colnames(y) <- c("A1","B2","C3","D4","E5","F6","G7","H8","I9","J10", "Batch")
-  y_adjusted_df <- hierarchical_adjustment(y, method="None")
-  expect_true(all.equal(rownames(y), rownames(y_adjusted_df)))
-  expect_true(all.equal(colnames(y), colnames(y_adjusted_df)))
 })
 
 test_that("BERT preserves rownames and column names -- BERT", {
@@ -158,21 +120,11 @@ test_that("BERT preserves rownames and column names -- BERT", {
   y <- as.matrix(y)
   rownames(y) <- c("A","B","C","D","E","F","G","H","I")
   colnames(y) <- c("A1","B2","C3","D4","E5","F6","G7","H8","I9","J10", "Batch")
-  y_adjusted_df <- hierarchical_adjustment(y, method="None")
+  y_adjusted_df <- BERT(y, method="None")
   expect_true(all.equal(rownames(y), rownames(y_adjusted_df)))
   expect_true(all.equal(colnames(y), colnames(y_adjusted_df)))
 })
 
-test_that("BERT prints ASW Batch if qualitycontrol is TRUE -- hierarchical_adjustment", {
-  # generate dataset, 9 samples, 10 features
-  y <- matrix(rnorm(10*9),9,10)
-  y <- data.frame(y)
-  y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
-  y <- as.matrix(y)
-  rownames(y) <- c("A","B","C","D","E","F","G","H","I")
-  colnames(y) <- c("A1","B2","C3","D4","E5","F6","G7","H8","I9","J10", "Batch")
-  expect_output(hierarchical_adjustment(y, method="None", qualitycontrol = TRUE), "\\w*ASW Batch was\\w*")
-})
 
 test_that("BERT prints ASW Batch if qualitycontrol is TRUE -- BERT", {
   # generate dataset, 9 samples, 10 features
@@ -182,20 +134,9 @@ test_that("BERT prints ASW Batch if qualitycontrol is TRUE -- BERT", {
   y <- as.matrix(y)
   rownames(y) <- c("A","B","C","D","E","F","G","H","I")
   colnames(y) <- c("A1","B2","C3","D4","E5","F6","G7","H8","I9","J10", "Batch")
-  expect_output(hierarchical_adjustment(y, method="None", qualitycontrol = TRUE), "\\w*ASW Batch was\\w*")
+  expect_output(BERT(y, method="None", qualitycontrol = TRUE), "\\w*ASW Batch was\\w*")
 })
 
-test_that("BERT prints ASW Label if qualitycontrol is TRUE -- hierarchical adjustment", {
-  # generate dataset, 9 samples, 10 features
-  y <- matrix(rnorm(10*9),9,10)
-  y <- data.frame(y)
-  y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
-  y["Label"] <- c(0,1,2,0,1,2,0,1,2)
-  y <- as.matrix(y)
-  rownames(y) <- c("A","B","C","D","E","F","G","H","I")
-  colnames(y) <- c("A1","B2","C3","D4","E5","F6","G7","H8","I9","J10", "Batch", "Label")
-  expect_output(hierarchical_adjustment(y, method="None", qualitycontrol = TRUE), "\\w*ASW Label was\\w*")
-})
 
 test_that("BERT prints ASW Label if qualitycontrol is TRUE -- BERT", {
   # generate dataset, 9 samples, 10 features
@@ -206,5 +147,16 @@ test_that("BERT prints ASW Label if qualitycontrol is TRUE -- BERT", {
   y <- as.matrix(y)
   rownames(y) <- c("A","B","C","D","E","F","G","H","I")
   colnames(y) <- c("A1","B2","C3","D4","E5","F6","G7","H8","I9","J10", "Batch", "Label")
-  expect_output(hierarchical_adjustment(y, method="None", qualitycontrol = TRUE), "\\w*ASW Label was\\w*")
+  expect_output(BERT(y, method="None", qualitycontrol = TRUE), "\\w*ASW Label was\\w*")
+})
+
+test_that("BERT works with references", {
+  # generate dataset, 9 samples, 10 features
+  y <- matrix(rnorm(10*9),9,10)
+  y <- data.frame(y)
+  y[1:3,1:10] <- y[1:3,1:10] + 3
+  y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
+  y["Label"] <- c(0,1,2,0,1,2,0,1,2)
+  y["Reference"] <- c(1,2,0,1,2,0,1,2,0)
+  expect_error(BERT(y, method="ref"), NA)
 })

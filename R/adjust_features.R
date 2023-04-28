@@ -134,10 +134,12 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
   
   # list with the respective batches
   batch_list <- total_adjustable_data[["Batch"]]
+  # References
+  reference_list <- total_adjustable_data[["Reference"]]
   
   # drop columns that we want to ignore. That is, all allowed columns that don't
   # contain numeric values
-  total_adjustable_data <- total_adjustable_data[,!names(total_adjustable_data) %in% c("Batch", "Sample", "Label")]
+  total_adjustable_data <- total_adjustable_data[,!names(total_adjustable_data) %in% c("Batch", "Sample", "Label", "Reference")]
   
   # set combat mode
   if(combatmode ==1){
@@ -168,6 +170,8 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
       total_data[, names(total_adjustable_data)] <- suppressMessages(t(limma::removeBatchEffect(x = t(total_adjustable_data), batch = batch_list)))
     }else if (method=="None"){
       total_data[, names(total_adjustable_data)] <- total_adjustable_data
+    }else if (method=="ref"){
+      total_data[, names(total_adjustable_data)] <- suppressMessages(t(removeBatchEffectRefs(x = t(total_adjustable_data), batch = batch_list, references=reference_list)))
     }else{
       stop("Unknown adjustment method.")
     }
@@ -179,6 +183,9 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
       total_data[, names(total_adjustable_data)] <- suppressMessages(t(limma::removeBatchEffect(x = t(total_adjustable_data), batch = batch_list, design=total_mod)))
     }else if (method=="None"){
       total_data[, names(total_adjustable_data)] <- total_adjustable_data
+    }else if (method=="ref"){
+      logging::logwarn("Reference adjustment ingores covariate levels.")
+      total_data[, names(total_adjustable_data)] <- suppressMessages(t(removeBatchEffectRefs(x = t(total_adjustable_data), batch = batch_list, references=reference_list)))
     }else{
       stop("Unknown adjustment method.")
     }
