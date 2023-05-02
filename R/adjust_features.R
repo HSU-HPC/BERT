@@ -17,6 +17,10 @@ get_adjustable_features <- function(data_batch) {
     logging::logerror("Not enough samples at batch/covariate level.")
     stop("Fatal error.")
   }
+  # reduce to references, if applicable
+  if("Reference" %in% names(data_batch)){
+    data_batch <- data_batch[data_batch["Reference"]!=0, ]
+  }
   # get the numeric data (boolean)
   available_data <- !is.na(data_batch)
   # add the booleans per column (per feature)--> counts of numeric values
@@ -41,6 +45,12 @@ get_adjustable_features <- function(data_batch) {
 #' with too many missing values.
 #' @export
 get_adjustable_features_with_mod <- function(data_batch, mod_batch) {
+  # reduce to references, if applicable
+  if("Reference" %in% names(data_batch)){
+    data_batch <- data_batch[data_batch["Reference"]!=0, ]
+    mod_batch <- mod_batch[mod_batch["Reference"]!=0, ]
+  }
+  
   # unique covs
   uniques <- unique(mod_batch)
   
