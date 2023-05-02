@@ -10,7 +10,7 @@ get_adjustable_features(data_batch)
 \arguments{
 \item{data_batch}{Matrix or dataframe in the format (samples, features).
 Additional column names are "Batch", "Cov_X" (were X may be any number),
-"Label" and "Sample".}
+"Label", "Reference" and "Sample".}
 }
 \value{
 A logical with TRUE for adjustable features and FALSE for features

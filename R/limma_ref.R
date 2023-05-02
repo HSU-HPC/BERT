@@ -57,6 +57,9 @@ identify_references <- function(batch, references){
 #' @export 
 removeBatchEffectRefs <- function(x,batch,references)
 {
+  #narows = rowSums(!is.na(x))
+  #idx = which(narows<2)
+  #print(row.names(x)[idx])
   isref <- identify_references(batch, references)
   # set up initial design for entire data
   batch <- as.factor(batch)
