@@ -25,17 +25,24 @@ strip_Covariable <- function(dataset){
 #' @param classes Integer indicating the number of classes in the dataset.
 #' @param housekeeping If NULL, no huosekeeping features will be simulatd.
 #' Else, housepeeping indicates the fraction of of housekeeping features.
+#' @param deterministic Whether to assigns the classes deterministically,
+#' instead of random sampling
 #' @return A dataframe containing the simulated data.
 #' @export
-generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes, housekeeping = NULL){
+generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes, housekeeping = NULL, deterministic = FALSE){
   # genewise offset
   a <- stats::rnorm(features, mean=0, sd=1)
   # condition-specific offset
   bix <- matrix(unlist(stats::rnorm(features*classes, mean=0, sd=1)), nrow=features, ncol=classes)
   # the class values we may have
   potential_classes <- 1:classes
-  # randomly select the class labels for each sample, with equal probability!
-  classvector <- sample(potential_classes, batches*samplesperbatch, replace = TRUE)
+  if(deterministic){
+    classvector = (1:(batches*samplesperbatch))%%classes
+    classvector = classvector+1
+  }else{
+    # randomly select the class labels for each sample, with equal probability!
+    classvector <- sample(potential_classes, batches*samplesperbatch, replace = TRUE)
+  }
   # evenly distribute samples over batches
   batchvector <- comprehenr::to_vec(for(i in 1:(batches*samplesperbatch)) (i %% batches)+1)
   # make matrix for the numeric expression values
@@ -191,7 +198,7 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
 #' Compute the average silhouette width (ASW) for the dataset with respect
 #' to both label and batch.
 #'
-#'Columns labelled Sample and Cov_1 will be ignored.
+#'Columns labelled Batch, Sample, Label, Reference and Cov_1 will be ignored.
 #'
 #' @param dataset Dataframe in the shape (samples, features) with additional
 #' columns Batch and Label.
@@ -201,7 +208,7 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
 compute_asw <- function(dataset){
   dataset_nocov <- dataset [ , !grepl( "Cov" , names( dataset  ) ) ]
   # numeric values in dataset only
-  num_values <- dataset_nocov[,!names(dataset_nocov) %in% c("Batch", "Sample", "Label", "Cov_1")]
+  num_values <- dataset_nocov[,!names(dataset_nocov) %in% c("Batch", "Sample", "Label", "Cov_1", "Reference")]
   # compute distance matrix based on euclidean distances, ignoring NAs
   distancematrix <- stats::dist(num_values)
   

@@ -11,7 +11,8 @@ generateDataset(
   samplesperbatch,
   mvstmt,
   classes,
-  housekeeping = NULL
+  housekeeping = NULL,
+  deterministic = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ per batch.}
 
 \item{housekeeping}{If NULL, no huosekeeping features will be simulatd.
 Else, housepeeping indicates the fraction of of housekeeping features.}
+
+\item{deterministic}{Whether to assigns the classes deterministically,
+instead of random sampling}
 }
 \value{
 A dataframe containing the simulated data.

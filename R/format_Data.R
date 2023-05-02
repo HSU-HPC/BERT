@@ -126,7 +126,7 @@ format_DF <- function(data){
     data[data["Batch"] == b, !adjustable_batch] <- NA
     # require at least two references per batch
     if(!verify_references(data_batch)){
-      logging::logerror(paste("Reference column error in batch"), b)
+      logging::logerror(paste("Reference column error in batch", b))
       stop()
     }
   }

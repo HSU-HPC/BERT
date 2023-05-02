@@ -16,5 +16,5 @@ List with fields "Label" and "Batch" for the ASW with regards to Label
 and Batch respectively.
 }
 \description{
-Columns labelled Sample and Cov_1 will be ignored.
+Columns labelled Batch, Sample, Label, Reference and Cov_1 will be ignored.
 }

@@ -20,7 +20,7 @@ BERT(
 \arguments{
 \item{data}{Matrix or dataframe in the format (samples, features).
 Additional column names are "Batch", "Cov_X" (were X may be any number),
-"Label" and "Sample".}
+"Label", "Sample" and "Reference".}
 
 \item{cores}{The number of cores to use for parallel adjustment. Increasing
 this number leads to faster adjustment, especially on Linux machines. The
@@ -33,7 +33,8 @@ default is 1.}
 4              par.prior = FALSE, mean.only = TRUE
 Will be ignored, if method=="limma".}
 
-\item{method}{Adjustment method to use. Should either be "ComBat" or "limma".}
+\item{method}{Adjustment method to use. Should either be "ComBat", "limma"
+or "ref"}
 
 \item{qualitycontrol}{Boolean indicating, whether ASWs should be computed before
 and after batch effect adjustment. If TRUE, will compute ASW with respect to

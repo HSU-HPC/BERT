@@ -9,6 +9,14 @@ test_that("correctly counts numeric values", {
   expect_equal(count_existing(y), 9)
 })
 
+test_that("deterministic generation of datasets works", {
+  ds <- generateDataset(10, 4, 8, 0.1, 2, deterministic = TRUE)
+  classes <- ds[["Label"]]
+  expect_equal(max(classes), 2)
+  expect_equal(min(classes), 1)
+  expect_equal(sum(classes==1), 16) # class 2 also occurs 16 times then
+})
+
 test_that("Ignores Batch, Label, Sample and covariable columns", {
   # generate dataset, 3 samples, 5 features
   y <- matrix(rnorm(10*9),3,5)
