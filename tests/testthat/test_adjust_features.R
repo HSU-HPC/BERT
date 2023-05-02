@@ -8,6 +8,11 @@ test_that("correctly identifies adjustable features", {
   y <- data.frame(y)
   adjustable = c(TRUE, FALSE, FALSE, TRUE, TRUE)
   expect_true(all.equal(adjustable, as.vector(get_adjustable_features(y))))
+  
+  # and with references
+  y["Reference"] = c(1,1,0)
+  adjustable = c(FALSE, FALSE, FALSE, TRUE, TRUE, TRUE)
+  expect_true(all.equal(adjustable, as.vector(get_adjustable_features(y))))
 })
 
 test_that("only combat modes 1-4 are allowed", {
