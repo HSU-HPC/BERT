@@ -34,17 +34,20 @@ generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes,
   a <- stats::rnorm(features, mean=0, sd=1)
   # condition-specific offset
   bix <- matrix(unlist(stats::rnorm(features*classes, mean=0, sd=1)), nrow=features, ncol=classes)
+  # evenly distribute samples over batches
+  batchvector <- comprehenr::to_vec(for(i in 1:(batches*samplesperbatch)) (i %% batches)+1)
   # the class values we may have
   potential_classes <- 1:classes
   if(deterministic){
-    classvector = (1:(batches*samplesperbatch))%%classes
+    classvector = rep(0, batches*samplesperbatch)
+    for(b in unique(batchvector)){
+      classvector[batchvector==b] = (1:samplesperbatch)%%classes
+    }
     classvector = classvector+1
   }else{
     # randomly select the class labels for each sample, with equal probability!
     classvector <- sample(potential_classes, batches*samplesperbatch, replace = TRUE)
   }
-  # evenly distribute samples over batches
-  batchvector <- comprehenr::to_vec(for(i in 1:(batches*samplesperbatch)) (i %% batches)+1)
   # make matrix for the numeric expression values
   values <- matrix(0, ncol=features, nrow=batches*samplesperbatch)
   

@@ -15,6 +15,7 @@ test_that("deterministic generation of datasets works", {
   expect_equal(max(classes), 2)
   expect_equal(min(classes), 1)
   expect_equal(sum(classes==1), 16) # class 2 also occurs 16 times then
+  expect_equal(sum(classes[ds$Batch==1]==1), 4)
 })
 
 test_that("Ignores Batch, Label, Sample and covariable columns", {
