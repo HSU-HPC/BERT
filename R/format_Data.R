@@ -12,7 +12,7 @@ ordinal_encode <- function(column){
 
 #' Verify that the Reference column of the data contains only zeros and ones
 #' (if it is present at all)
-#' @param data the dataframe for this batch (samples in rows, samples in columns)
+#' @param batch the dataframe for this batch (samples in rows, samples in columns)
 #' @return either TRUE (everything correct) or FALSE (something is not correct)
 #' @export
 verify_references <- function(batch){

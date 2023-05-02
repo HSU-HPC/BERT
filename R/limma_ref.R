@@ -1,5 +1,5 @@
 #' Identifies the references to use for this specific batch effect adjustment
-#' @param vector of batch numbers. Must contain 2 unique elements
+#' @param batch vector of batch numbers. Must contain 2 unique elements
 #' @param references vector that contains 0, if the sample is to be c-adjusted
 #' and a class otherwise
 #' @return the indices of the reference samples
@@ -60,8 +60,8 @@ removeBatchEffectRefs <- function(x,batch,references)
   isref <- identify_references(batch, references)
   # set up initial design for entire data
   batch <- as.factor(batch)
-  contrasts(batch) <- contr.sum(levels(batch))
-  batch <- model.matrix(~batch)[,-1,drop=FALSE]
+  stats::contrasts(batch) <- stats::contr.sum(levels(batch))
+  batch <- stats::model.matrix(~batch)[,-1,drop=FALSE]
   X.batch <- cbind(batch,NULL,NULL)
   design <- matrix(1,nrow(X.batch),1)
   # select references

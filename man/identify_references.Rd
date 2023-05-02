@@ -7,10 +7,10 @@
 identify_references(batch, references)
 }
 \arguments{
+\item{batch}{vector of batch numbers. Must contain 2 unique elements}
+
 \item{references}{vector that contains 0, if the sample is to be c-adjusted
 and a class otherwise}
-
-\item{vector}{of batch numbers. Must contain 2 unique elements}
 }
 \value{
 the indices of the reference samples
