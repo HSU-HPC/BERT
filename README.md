@@ -83,7 +83,25 @@ dataset_adjusted <- BERT(dataset_raw)
 BERT uses the  `logging` library to convey live information to the user during the adjustment procedure. The algorithm first verifies the shape and suitability of the input dataframe (lines 1-6) before continuiing with the actual batch effect correction (lines 8-15). BERT measure batch effects before and after the correction step by means of the average silhouette score (ASW) with respect to batch and labels (lines 7 and 16). The ASW Label should increase in a successful batch effect correction, whereas low values ($\leq 0$) are desireable for the ASW Batch[^4]. Finally, BERT prints the total function execution time (including the evaluation of the quality metrics).
 
 ## Advanced Options
+BERT offers a large number of parameters to customize the batch effect adjustment. The full function call, including all defaults is
+```R
+BERT(data,cores = 1,combatmode = 1,method = "ComBat",qualitycontrol = TRUE,verify = TRUE,mpi = FALSE,stopParBatches = 4,corereduction = 2,backend = "default")
+```
+In the following, we list the respective meaning of each parameter:
+- `data`: The input dataframe or matrix to adjust. See ... for instructions on the required format. See [Data Preparation](#data-preparation) for detailed formatting instructions.
+- `cores`: The number of cores (processes) to use for parallel adjustment. Increasing this parameter can speed up the batch effect adjustment considerably, in particular for large datasets. If possible, the processes are spawned by forking -- otherwise, BERT uses `PSOCKCluster`. For typical commodity hardware a value between $2$ and $4$ is a reasonable choice.
+- `method` The method to use for the underlying batch effect correction steps. Should be either `ComBat`, `limma` for `limma::removeBatchEffects` or `ref` for adjustment using specified references (cf. [Data Preparation](#data-preparation)). The underlying batch effect adjustment method for `ref` is a modified version of the `limma` method.
+- `combatmode` An integer that encodes the parameters to use for ComBat.
 
+| Value | par.prior | mean.only 
+| --- | --- | ---
+| 1 | TRUE | FALSE
+| 2 | TRUE | TRUE
+| 3 | FALSE | FALSE
+| 4 | FALSE | TRUE
+
+The value of this parameter will be ignored, if `method!="ComBat"`.
+- `qualitycontrol` A boolean to (de)activate the ASW computation. Deactivating the ASW computations accelerates the computations.
 
 [^1]: The base directory contains the folders *man*,*R* and *tests*. 
 [^2]: Matrices work as well, but will automatically be converted to dataframes.
