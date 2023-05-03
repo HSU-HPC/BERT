@@ -45,6 +45,22 @@ identify_references <- function(batch, references){
   return(isref)
 }
 
+#' Identifies the adjustable features using only the references. Similar to
+#' the function in adjust_features.R but with different arguments
+#' @param x the data matrix
+#' @param batch the list with the batches
+#' @param idx the vector indicating whether the respective sample is to be used
+#' as references
+#' @return vector indicating whether each feature can be adjusted
+#' @export
+identify_adjustableFeatures_refs <- function(x, batch, idx){
+  # the unique batches
+  batch_vals <- unique(batch)# definitely 2, otherwise would have crashed
+  adjustable_b1 <- rowSums(!is.na(x[,(batch==batch_vals[1])&idx]))>=2
+  adjustable_b2 <- rowSums(!is.na(x[,(batch==batch_vals[2])&idx]))>=2
+  return(adjustable_b1&adjustable_b2)
+}
+
 #' A method to remove batch effects estimated from a subset (references)
 #' per batch only.
 #' Source code is heavily based on limma::removeBatchEffects by
@@ -57,10 +73,10 @@ identify_references <- function(batch, references){
 #' @export 
 removeBatchEffectRefs <- function(x,batch,references)
 {
-  #narows = rowSums(!is.na(x))
-  #idx = which(narows<2)
-  #print(row.names(x)[idx])
   isref <- identify_references(batch, references)
+  # select features to adjust (aka. features for which the selected references
+  # provide sufficient data)
+  adjustable <- identify_adjustableFeatures_refs(x, batch, isref)
   # set up initial design for entire data
   batch <- as.factor(batch)
   stats::contrasts(batch) <- stats::contr.sum(levels(batch))
@@ -70,10 +86,12 @@ removeBatchEffectRefs <- function(x,batch,references)
   # select references
   Xref.batch <- as.matrix(X.batch[isref,])
   designref <- matrix(1,nrow(Xref.batch),1)
-  xref <- x[,isref]
+  xref <- x[adjustable,isref]
   fit <- limma::lmFit(xref, cbind(designref, Xref.batch))
   beta <- fit$coefficients[,-(1:ncol(design)),drop=FALSE]
   beta[is.na(beta)] <- 0
   # now on full data
-  as.matrix(x) - beta %*% t(X.batch)
+  x <- as.matrix(x)
+  x[adjustable, ] = as.matrix(x[adjustable, ]) - beta %*% t(X.batch)
+  return(x)
 }

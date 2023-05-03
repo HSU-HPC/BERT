@@ -6,6 +6,18 @@ test_that("batch effect adjustment with references works",{
   expect_silent(removeBatchEffectRefs(y, batch, references))
 })
 
+test_that("features with sufficient data among referecnes are correctly identified", {
+  y <- matrix(rnorm(4*5),4,5)
+  y[1,1] <- NA
+  y[1:3, 2] <- NA
+  y[1:2, 3] <- NA
+  batches <- c(1,1,2,2)
+  idx = c(TRUE, TRUE, TRUE, TRUE)
+  correct <- c(FALSE, FALSE, FALSE, TRUE, TRUE)
+  t <- identify_adjustableFeatures_refs(t(y), batches, idx)
+  expect_true(all.equal(t, correct))
+})
+
 test_that("References can be correctly identified",{
   batch <- c("A","A","A","A","A","B","B","B","B","B")
   references <- c(1,2,1,2,0,1,2,0,1,2)
