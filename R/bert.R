@@ -134,7 +134,7 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #' 2              par.prior = TRUE, mean.only = TRUE
 #' 3              par.prior = FALSE, mean.only = FALSE
 #' 4              par.prior = FALSE, mean.only = TRUE
-#' Will be ignored, if method=="limma".
+#' Will be ignored, if method!="ComBat".
 #' @param method Adjustment method to use. Should either be "ComBat", "limma"
 #' or "ref"
 #' @param qualitycontrol Boolean indicating, whether ASWs should be computed before

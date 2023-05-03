@@ -31,7 +31,7 @@ default is 1.}
 2              par.prior = TRUE, mean.only = TRUE
 3              par.prior = FALSE, mean.only = FALSE
 4              par.prior = FALSE, mean.only = TRUE
-Will be ignored, if method=="limma".}
+Will be ignored, if method!="ComBat".}
 
 \item{method}{Adjustment method to use. Should either be "ComBat", "limma"
 or "ref"}
