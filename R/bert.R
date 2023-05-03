@@ -75,6 +75,11 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
     # split data and covariates
     mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
     data <- data [ , !grepl( "Cov" , names( data  ) ) ]
+    # don't allow covariables AND references
+    if((dim(mod)[2]) & ("Reference" %in% names(data))){
+      logging::logerror("Covariable and reference columns should not exist simultanously.")
+      stop("Fatal error.")
+    }
     
     # number of batches at current level
     num_batches <- length(unique(data$Batch))
@@ -226,6 +231,11 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontro
   # last few batches are adjusted sequentially to avoid overheads
   mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
   data <- data [ , !grepl( "Cov" , names( data  ) ) ]
+  # don't allow covariables AND references
+  if((dim(mod)[2]) & ("Reference" %in% names(data))){
+    logging::logerror("Covariable and reference columns should not exist simultanously.")
+    stop("Fatal error.")
+  }
   hierarchy_level <- 1
   while (num_batches > 1) {
     logging::loginfo(paste("Adjusting sequential tree level", hierarchy_level, "with", num_batches, "batches"))

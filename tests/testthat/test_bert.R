@@ -94,6 +94,19 @@ test_that("dataset not corrupted without adjustment -- BERT", {
   expect_true(all.equal(y, y_adjusted[rownames(y), colnames(y)]))
 })
 
+test_that("BERT does not allow combination of covariable and reference columns", {
+  # generate dataset, 9 samples, 10 features
+  y <- matrix(rnorm(10*9),9,10)
+  y <- data.frame(y)
+  y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
+  y["Cov_1"] <- c(1,1,2,2,3,3,4,4,5)
+  y["Reference"] <- c(1,1,2,2,3,3,4,4,5)
+  # sequential
+  testthat::expect_error(BERT(y, method="None"))
+  # parallel
+  testthat::expect_error(BERT(y, 2, method="None"))
+})
+
 test_that("bert works for simulated data without any formatting of the input -- BERT", {
   # generate dataset, 9 samples, 10 features
   y <- generateDataset(100,5,10,0.1,2)
