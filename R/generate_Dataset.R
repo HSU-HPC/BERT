@@ -250,7 +250,7 @@ compute_asw <- function(dataset){
 count_existing <- function(dataset){
   dataset_nocov <- dataset [ , !grepl( "Cov" , names( dataset  ) ) ]
   # select only numeric columns
-  num_values <- dataset_nocov[,!names(dataset_nocov) %in% c("Batch", "Sample", "Label")]
+  num_values <- dataset_nocov[,!names(dataset_nocov) %in% c("Batch", "Sample", "Label", "Reference")]
   # sum up non-missing values
   return(sum(!is.na(num_values)))
 }
