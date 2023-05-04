@@ -89,21 +89,192 @@ BERT(data,cores = 1,combatmode = 1,method = "ComBat",qualitycontrol = TRUE,verif
 ```
 In the following, we list the respective meaning of each parameter:
 - `data`: The input dataframe or matrix to adjust. See ... for instructions on the required format. See [Data Preparation](#data-preparation) for detailed formatting instructions.
-- `cores`: The number of cores (processes) to use for parallel adjustment. Increasing this parameter can speed up the batch effect adjustment considerably, in particular for large datasets. If possible, the processes are spawned by forking -- otherwise, BERT uses `PSOCKCluster`. For typical commodity hardware a value between $2$ and $4$ is a reasonable choice.
-- `method` The method to use for the underlying batch effect correction steps. Should be either `ComBat`, `limma` for `limma::removeBatchEffects` or `ref` for adjustment using specified references (cf. [Data Preparation](#data-preparation)). The underlying batch effect adjustment method for `ref` is a modified version of the `limma` method.
+- `method`: The method to use for the underlying batch effect correction steps. Should be either `ComBat`, `limma` for `limma::removeBatchEffects` or `ref` for adjustment using specified references (cf. [Data Preparation](#data-preparation)). The underlying batch effect adjustment method for `ref` is a modified version of the `limma` method.
 - `combatmode` An integer that encodes the parameters to use for ComBat.
 
-| Value | par.prior | mean.only 
-| --- | --- | ---
-| 1 | TRUE | FALSE
-| 2 | TRUE | TRUE
-| 3 | FALSE | FALSE
-| 4 | FALSE | TRUE
+  | Value | par.prior | mean.only 
+  | --- | --- | ---
+  | 1 | TRUE | FALSE
+  | 2 | TRUE | TRUE
+  | 3 | FALSE | FALSE
+  | 4 | FALSE | TRUE
 
-The value of this parameter will be ignored, if `method!="ComBat"`.
-- `qualitycontrol` A boolean to (de)activate the ASW computation. Deactivating the ASW computations accelerates the computations.
+  The value of this parameter will be ignored, if `method!="ComBat"`.
+- `qualitycontrol`: A boolean to (de)activate the ASW computation. Deactivating the ASW computations accelerates the computations.
+- `verify`: A boolean to (de)activate the initial format check of the input data. Deactivating this verification step accelerates the computations.
+- `cores`: The number of cores (processes) to use for parallel adjustment. Increasing this parameter can speed up the batch effect adjustment considerably, in particular for large datasets. If possible, the processes are spawned by forking -- otherwise, BERT uses `PSOCKCluster`. For typical commodity hardware a value between $2$ and $4$ is a reasonable choice.
+- `stopParBatches` Positive integer indicating the minimum number of batches required at a hierarchy level to proceed with parallelized adjustment. If the number of batches is smaller, adjustment will be performed sequentially to avoid communication overheads.
+- `corereduction` Positive integer indicating the factor by which the number of processes should be reduced, once no further adjustment is possible for the current number of batches.[^5]
+- `mpi`: A boolean to (de)activate the MPI backend. If `TRUE`, this will replace the default `ForkCluster` or `PSOCKCluster`.
+- `backend`: The backend to use for inter-process communication. Possible choices are `default` and `file`, where the former refers to the default communication backend of the requested parallelization mode and the latter will create temporary `.rds` files for data communication. 'default' is usually faster for small to medium sized datasets.
+
+## Examples
+
+In the following, we present simple cookbook examples for BERT usage. Note that ASWs (and runtime) will most likely differ on your machine, since the data generating process involves multiple random choices.
+
+#### Sequential Adjustment with limma
+
+```R
+# import BERT
+library(BERT)
+# generate data with 30 batches, 600 features, 15 samples per batch, 15% missing values and 2 classes
+dataset_raw <- generateDataset(features=600, batches=20, samplesperbatch=15, mvstmt=0.15, classes=2)
+# BERT
+dataset_adjusted <- BERT(dataset_raw, method="limma")
+```
+
+```
+2023-05-04 08:47:30 INFO::Formatting Data.
+2023-05-04 08:47:30 INFO::Replacing NaNs with NAs.
+2023-05-04 08:47:30 INFO::Removing potential empty rows and columns
+2023-05-04 08:47:30 INFO::Found  12000  missing values.
+2023-05-04 08:47:30 INFO::Introduced  0  missing values due to singular proteins at batch/covariate level.
+2023-05-04 08:47:30 INFO::Done
+2023-05-04 08:47:30 INFO::Acquiring quality metrics before batch effect correction.
+2023-05-04 08:47:30 INFO::Starting hierarchical adjustment
+2023-05-04 08:47:30 INFO::Found  20  batches.
+2023-05-04 08:47:30 INFO::Adjusting the last 20 batches sequentially
+2023-05-04 08:47:30 INFO::Adjusting sequential tree level 1 with 20 batches
+2023-05-04 08:47:31 INFO::Adjusting sequential tree level 2 with 10 batches
+2023-05-04 08:47:31 INFO::Adjusting sequential tree level 3 with 5 batches
+2023-05-04 08:47:32 INFO::Adjusting sequential tree level 4 with 3 batches
+2023-05-04 08:47:32 INFO::Adjusting sequential tree level 5 with 2 batches
+2023-05-04 08:47:32 INFO::Done
+2023-05-04 08:47:32 INFO::Acquiring quality metrics after batch effect correction.
+2023-05-04 08:47:32 INFO::ASW Batch was 0.505805793208734 prior to batch effect correction and is now -0.123165780027324 .
+2023-05-04 08:47:32 INFO::ASW Label was 0.300158617645049 prior to batch effect correction and is now 0.813535343433545 .
+2023-05-04 08:47:32 INFO::Total function execution time is  1.79658007621765  s and adjustment time is  1.4183521270752 s ( 78.95 )
+```
+
+#### Parallel Batch Effect Correction with ComBat
+
+```R
+# import BERT
+library(BERT)
+# generate data with 30 batches, 600 features, 15 samples per batch, 15% missing values and 2 classes
+dataset_raw <- generateDataset(features=600, batches=20, samplesperbatch=15, mvstmt=0.15, classes=2)
+# BERT
+dataset_adjusted <- BERT(dataset_raw, cores=2)
+```
+
+```
+2023-05-04 08:51:31 INFO::Formatting Data.
+2023-05-04 08:51:31 INFO::Replacing NaNs with NAs.
+2023-05-04 08:51:31 INFO::Removing potential empty rows and columns
+2023-05-04 08:51:31 INFO::Found  27000  missing values.
+2023-05-04 08:51:32 INFO::Introduced  0  missing values due to singular proteins at batch/covariate level.
+2023-05-04 08:51:32 INFO::Done
+2023-05-04 08:51:32 INFO::Acquiring quality metrics before batch effect correction.
+2023-05-04 08:51:32 INFO::Setting up cluster with  2  cores.
+2023-05-04 08:51:32 INFO::Identified OS as Windows. Using Parallel Socket Cluster (PSOCK).
+2023-05-04 08:51:32 INFO::Done
+2023-05-04 08:51:32 INFO::Starting hierarchical adjustment
+2023-05-04 08:51:32 INFO::Found  20  batches.
+2023-05-04 08:51:32 INFO::Processing subtree level 1 with 20 batches using 2 cores.
+2023-05-04 08:51:37 INFO::Adjusting the last 2 batches sequentially
+2023-05-04 08:51:37 INFO::Adjusting sequential tree level 1 with 2 batches
+2023-05-04 08:51:37 INFO::Done
+2023-05-04 08:51:37 INFO::Stopping cluster gracefully.
+2023-05-04 08:51:37 INFO::Done
+2023-05-04 08:51:37 INFO::Acquiring quality metrics after batch effect correction.
+2023-05-04 08:51:38 INFO::ASW Batch was 0.515034992184603 prior to batch effect correction and is now -0.108202226399361 .
+2023-05-04 08:51:38 INFO::ASW Label was 0.315180231450925 prior to batch effect correction and is now 0.806086240878908 .
+2023-05-04 08:51:38 INFO::Total function execution time is  6.19199800491333  s and adjustment time is  4.94132399559021 s ( 79.8 )
+```
+
+#### BERT with Covariables
+
+```R
+# import BERT
+library(BERT)
+# generate data with 30 batches, 600 features, 15 samples per batch, 15% missing values and 2 classes
+dataset_raw <- generateDataset(features=600, batches=20, samplesperbatch=15, mvstmt=0.15, classes=2)
+# create covariable column with 2 possible values, e.g. male/female condition
+dataset_raw["Cov_1"] = sample(c(1,2), size=dim(dataset_raw)[1], replace=TRUE)
+# BERT
+dataset_adjusted <- BERT(dataset_raw)
+```
+
+```
+2023-05-04 09:04:38 INFO::Formatting Data.
+2023-05-04 09:04:38 INFO::Replacing NaNs with NAs.
+2023-05-04 09:04:38 INFO::Removing potential empty rows and columns
+2023-05-04 09:04:38 INFO::Found  27000  missing values.
+2023-05-04 09:04:38 INFO::BERT requires at least 2 numeric values per batch/covariate level. This may reduce the number of adjustable features considerably, depending on the quantification technique.
+2023-05-04 09:04:38 INFO::Introduced  0  missing values due to singular proteins at batch/covariate level.
+2023-05-04 09:04:38 INFO::Done
+2023-05-04 09:04:38 INFO::Acquiring quality metrics before batch effect correction.
+2023-05-04 09:04:39 INFO::Starting hierarchical adjustment
+2023-05-04 09:04:39 INFO::Found  20  batches.
+2023-05-04 09:04:39 INFO::Adjusting the last 20 batches sequentially
+2023-05-04 09:04:39 INFO::Adjusting sequential tree level 1 with 20 batches
+2023-05-04 09:04:39 INFO::Adjusting sequential tree level 2 with 10 batches
+2023-05-04 09:04:40 INFO::Adjusting sequential tree level 3 with 5 batches
+2023-05-04 09:04:41 INFO::Adjusting sequential tree level 4 with 3 batches
+2023-05-04 09:04:41 INFO::Adjusting sequential tree level 5 with 2 batches
+2023-05-04 09:04:41 INFO::Done
+2023-05-04 09:04:41 INFO::Acquiring quality metrics after batch effect correction.
+2023-05-04 09:04:41 INFO::ASW Batch was 0.493321585409235 prior to batch effect correction and is now -0.12597947286234 .
+2023-05-04 09:04:41 INFO::ASW Label was 0.333404392178747 prior to batch effect correction and is now 0.803468947362174 .
+2023-05-04 09:04:41 INFO::Total function execution time is  3.29042482376099  s and adjustment time is  2.47309303283691 s ( 75.16 )
+```
+
+#### BERT with references
+
+```R
+# import BERT
+library(BERT)
+# generate data with 4 batches, 600 features, 15 samples per batch, 15% missing values and 2 classes
+dataset_raw <- generateDataset(features=600, batches=4, samplesperbatch=15, mvstmt=0.15, classes=2)
+# create reference column with default value 0.  The 0 indicates, that the respective sample should be co-adjusted only.
+dataset_raw[, "Reference"] <- 0
+# randomly select 2 references per batch and class - in practice, this choice will be determined by external requirements (e.g. class known for only these samples)
+batches <- unique(dataset_raw$Batch) # all the batches
+for(b in batches){ # iterate over all batches
+    # references from class 1
+    ref_idx = sample(which((dataset_raw$Batch==b)&(dataset_raw$Label==1)), size=2, replace=FALSE)
+    dataset_raw[ref_idx, "Reference"] <- 1
+    # references from class 2
+    ref_idx = sample(which((dataset_raw$Batch==b)&(dataset_raw$Label==2)), size=2, replace=FALSE)
+    dataset_raw[ref_idx, "Reference"] <- 2
+}
+# BERT
+dataset_adjusted <- BERT(dataset_raw, method="ref")
+```
+
+```
+2023-05-04 09:16:05 INFO::Formatting Data.
+2023-05-04 09:16:05 INFO::Replacing NaNs with NAs.
+2023-05-04 09:16:05 INFO::Removing potential empty rows and columns
+2023-05-04 09:16:05 INFO::Found  5400  missing values.
+2023-05-04 09:16:05 INFO::Introduced  0  missing values due to singular proteins at batch/covariate level.
+2023-05-04 09:16:05 INFO::Done
+2023-05-04 09:16:05 INFO::Acquiring quality metrics before batch effect correction.
+2023-05-04 09:16:05 INFO::Starting hierarchical adjustment
+2023-05-04 09:16:05 INFO::Found  4  batches.
+2023-05-04 09:16:05 INFO::Adjusting the last 4 batches sequentially
+2023-05-04 09:16:05 INFO::Adjusting sequential tree level 1 with 4 batches
+2023-05-04 09:16:05 INFO::Adjusting sequential tree level 2 with 2 batches
+2023-05-04 09:16:05 INFO::Done
+2023-05-04 09:16:05 INFO::Acquiring quality metrics after batch effect correction.
+2023-05-04 09:16:05 INFO::ASW Batch was 0.544575830258036 prior to batch effect correction and is now -0.1478167400377 .
+2023-05-04 09:16:05 INFO::ASW Label was 0.380573240992057 prior to batch effect correction and is now 0.923705947392327 .
+2023-05-04 09:16:05 INFO::Total function execution time is  0.394418001174927  s and adjustment time is  0.241964817047119 s ( 61.35 )
+```
+
+## Issues
+Please report any issues in the GitHub forum or contact [the authors](mailto:schumany@hsu-hh.de,schlumbohm@hsu-hh.de) directly.
+
+## License
+
+This code is published under the GPLv3.0 License and is available for non-commercial academic purposes.
+
+## Reference
+Please cite our manuscript, if you use BERT for your research:
+> Yannis Schumann, Simon Schlumbohm et al., BERT - Batch Effect Reduction Trees with Tolerance to Missing Values, 2023
 
 [^1]: The base directory contains the folders *man*,*R* and *tests*. 
 [^2]: Matrices work as well, but will automatically be converted to dataframes.
 [^3]: In particular, the row and column names are in the same order and the optional columns are preserved.
 [^4]: The optimum of ASW Label is 1, which is typically however not achieved on real-world datasets. Also, the optimum of ASW Batch can vary, depending on the class distributions of the batches.
+[^5]: E.g. consider a BERT call 8 batches and 8 processes. With `corereduction=2`, the number of processes for the following adjustment steps would be set to $8/2=4$, which is the maximum number of usable processes for this example.
