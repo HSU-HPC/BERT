@@ -34,7 +34,7 @@ default is 1.}
 Will be ignored, if method!="ComBat".}
 
 \item{method}{Adjustment method to use. Should either be "ComBat", "limma"
-or "ref"}
+or "ref". Also allows "None" for testing purposes, which will perform no BE adjustment}
 
 \item{qualitycontrol}{Boolean indicating, whether ASWs should be computed before
 and after batch effect adjustment. If TRUE, will compute ASW with respect to
@@ -43,8 +43,7 @@ the "Batch" and "Label" column (if existent).}
 \item{verify}{Whether the input matrix/dataframe needs to be verified befire adjustment
 (faster if FALSE)}
 
-\item{mpi}{Whether to use MPI for inter-node parallelization.
-Also allows "None" for testing purposes, which will perform no BE adjustment}
+\item{mpi}{Whether to use MPI for parallelization.}
 
 \item{stopParBatches}{The minimum number of batches required at a hierarchy level
 to proceed with parallelized adjustment. If the number of batches
