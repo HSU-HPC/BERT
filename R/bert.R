@@ -136,14 +136,13 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #' 4              par.prior = FALSE, mean.only = TRUE
 #' Will be ignored, if method!="ComBat".
 #' @param method Adjustment method to use. Should either be "ComBat", "limma"
-#' or "ref"
+#' or "ref". Also allows "None" for testing purposes, which will perform no BE adjustment
 #' @param qualitycontrol Boolean indicating, whether ASWs should be computed before
 #' and after batch effect adjustment. If TRUE, will compute ASW with respect to
 #' the "Batch" and "Label" column (if existent).
 #' @param verify Whether the input matrix/dataframe needs to be verified befire adjustment
 #' (faster if FALSE)
-#' @param mpi Whether to use MPI for inter-node parallelization.
-#' Also allows "None" for testing purposes, which will perform no BE adjustment
+#' @param mpi Whether to use MPI for parallelization.
 #' @param stopParBatches The minimum number of batches required at a hierarchy level
 #' to proceed with parallelized adjustment. If the number of batches
 #' is smaller, adjustment will be performed sequentially to avoid overheads.
