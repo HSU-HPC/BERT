@@ -1,7 +1,7 @@
 BERT <img src="https://user-images.githubusercontent.com/81758255/236138668-c422b935-ed7f-4f2c-82a5-69503d8416f4.png" width="120px" align="right" />
 ===========
 
- > BERT (Batch-Effect Removal with Trees) offers flexible and efficient batch effect correction of omics data, while providing maximum tolerance to missing values. Tested on datasets from proteomic analyses, BERT offered a typical 5-10x runtime improvement over existing methods, while retaining more numeric values and preserving batch effect reduction quality.
+ > BERT (Batch-Effect Removal with Trees) offers flexible and efficient batch effect correction of omics data, while providing maximum tolerance to missing values. Tested on multiple datasets from proteomic analyses, BERT offered a typical 5-10x runtime improvement over existing methods, while retaining more numeric values and preserving batch effect reduction quality.
  
 ## Installation
 ### Core Functionality
@@ -29,7 +29,7 @@ Alternatively, BERT may also be installed directly from GitHub using
 devtools::install_github("HSU-HPC/BERT/BERT")
 ```
 ### Additional Features
-In order to use the MPI backend, the user should install the packages `Rmpi` and `doMPI` on their system. Note, that this requires a working MPI installation on your system.
+In order to use the MPI backend, users should install the packages `Rmpi` and `doMPI` on their system. Note, that this requires a working MPI installation on your system.
 ```R
 install.packages("Rmpi")
 install.packages("doMPI")
@@ -46,8 +46,8 @@ As input, BERT requires a dataframe[^2] with samples in rows and features in col
  Note that each batch should contain at least two samples. Optional columns that can be passed are
  - `Label` A column with integers indicating the (known) class for each sample. `NA` is not allowed. BERT may use this columns and `Batch` to compute quality metrics after batch effect correction.
  - `Sample` A sample name. This column is ignored by BERT and can be used to provide meta-information for further processing.
- - `Cov_1`, `Cov_2`, ..., `Cov_x`: One or multiple columns with integers, indicating one or several covariate levels. `NA` is not allowed. If this(these) column(s) is present, BERT will pass them as covariates to the the underlying batch effect correction method. As an example, this functionality can be used to preserve differences between healthy/tumorous sample, if some of the batches exhibit strongly variable class distributions. Note that BERT requires at least two numeric values per batch and unique covariate level to adjust a feature. Features that don't satisfy this condition in a specific batch are set to `NA` for that batch. 
-- `Reference` A column with integers from $\mathbb{N}_0$ that indicate, whether a sample should be used for "learning" the transformation for batch effect correction or whether the sample should be co-adjusted using the learned transformation from the other samples. `NA` is not allowed. This feature can be used, if some batches contain unique classes or samples with unknown classes -- prohibiting the usage of the covariate columns. If the column contains a `0` for a sample, this sample will be co-adjusted. Otherwise, the sample should contain the respective class (encoded as integer). Note that BERT requires at least two references of common class per adjustment step and that the `Reference` column is mutually exclusive with covariate columns.
+ - `Cov_1`, `Cov_2`, ..., `Cov_x`: One or multiple columns with integers, indicating one or several covariate levels. `NA` is not allowed. If this(these) column(s) is present, BERT will pass them as covariates to the the underlying batch effect correction method. As an example, this functionality can be used to preserve differences between healthy/tumorous samples, if some of the batches exhibit strongly variable class distributions. Note that BERT requires at least two numeric values per batch and unique covariate level to adjust a feature. Features that don't satisfy this condition in a specific batch are set to `NA` for that batch. 
+- `Reference` A column with integers from $\mathbb{N}_0$ that indicate, whether a sample should be used for "learning" the transformation for batch effect correction or whether the sample should be co-adjusted using the learned transformation from the other samples. `NA` is not allowed. This feature can be used, if some batches contain unique classes or samples with unknown classes which would prohibit the usage of covariate columns. If the column contains a `0` for a sample, this sample will be co-adjusted. Otherwise, the sample should contain the respective class (encoded as integer). Note that BERT requires at least two references of common class per adjustment step and that the `Reference` column is mutually exclusive with covariate columns.
 
 ## Basic Usage
 BERT can be invoked by importing the `BERT` library and calling the `BERT` function. The batch effect corrected data is returned as a dataframe that mirrors the input dataframe[^3].
@@ -81,7 +81,7 @@ dataset_adjusted <- BERT(dataset_raw)
 2023-05-03 15:54:59 INFO::Total function execution time is  3.00484490394592  s and adjustment time is  1.84376502037048 s ( 61.36 )
 ```
 
-BERT uses the  `logging` library to convey live information to the user during the adjustment procedure. The algorithm first verifies the shape and suitability of the input dataframe (lines 1-6) before continuiing with the actual batch effect correction (lines 8-15). BERT measure batch effects before and after the correction step by means of the average silhouette score (ASW) with respect to batch and labels (lines 7 and 16). The ASW Label should increase in a successful batch effect correction, whereas low values ($\leq 0$) are desireable for the ASW Batch[^4]. Finally, BERT prints the total function execution time (including the evaluation of the quality metrics).
+BERT uses the  `logging` library to convey live information to the user during the adjustment procedure. The algorithm first verifies the shape and suitability of the input dataframe (lines 1-6) before continuing with the actual batch effect correction (lines 8-15). BERT measure batch effects before and after the correction step by means of the average silhouette score (ASW) with respect to batch and labels (lines 7 and 16). The ASW Label should increase in a successful batch effect correction, whereas low values ($\leq 0$) are desireable for the ASW Batch[^4]. Finally, BERT prints the total function execution time (including the computation time for the quality metrics).
 
 ## Advanced Options
 BERT offers a large number of parameters to customize the batch effect adjustment. The full function call, including all defaults is
@@ -89,7 +89,7 @@ BERT offers a large number of parameters to customize the batch effect adjustmen
 BERT(data,cores = 1,combatmode = 1,method = "ComBat",qualitycontrol = TRUE,verify = TRUE,mpi = FALSE,stopParBatches = 4,corereduction = 2,backend = "default")
 ```
 In the following, we list the respective meaning of each parameter:
-- `data`: The input dataframe or matrix to adjust. See ... for instructions on the required format. See [Data Preparation](#data-preparation) for detailed formatting instructions.
+- `data`: The input dataframe or matrix to adjust. See [Data Preparation](#data-preparation) for detailed formatting instructions.
 - `method`: The method to use for the underlying batch effect correction steps. Should be either `ComBat`, `limma` for `limma::removeBatchEffects` or `ref` for adjustment using specified references (cf. [Data Preparation](#data-preparation)). The underlying batch effect adjustment method for `ref` is a modified version of the `limma` method.
 - `combatmode` An integer that encodes the parameters to use for ComBat.
 
@@ -103,7 +103,7 @@ In the following, we list the respective meaning of each parameter:
   The value of this parameter will be ignored, if `method!="ComBat"`.
 - `qualitycontrol`: A boolean to (de)activate the ASW computation. Deactivating the ASW computations accelerates the computations.
 - `verify`: A boolean to (de)activate the initial format check of the input data. Deactivating this verification step accelerates the computations.
-- `cores`: The number of cores (processes) to use for parallel adjustment. Increasing this parameter can speed up the batch effect adjustment considerably, in particular for large datasets. If possible, the processes are spawned by forking -- otherwise, BERT uses `PSOCKCluster`. For typical commodity hardware a value between $2$ and $4$ is a reasonable choice.
+- `cores`: The number of cores (processes) to use for parallel adjustment. Increasing this parameter can speed up the batch effect adjustment considerably, in particular for large datasets. If possible, the processes are spawned by forking -- otherwise, BERT uses `PSOCKCluster`. A value between $2$ and $4$ is a reasonable choice for typical commodity hardware.
 - `stopParBatches` Positive integer indicating the minimum number of batches required at a hierarchy level to proceed with parallelized adjustment. If the number of batches is smaller, adjustment will be performed sequentially to avoid communication overheads.
 - `corereduction` Positive integer indicating the factor by which the number of processes should be reduced, once no further adjustment is possible for the current number of batches.[^5]
 - `mpi`: A boolean to (de)activate the MPI backend. If `TRUE`, this will replace the default `ForkCluster` or `PSOCKCluster`.
@@ -278,4 +278,4 @@ Please cite our manuscript, if you use BERT for your research:
 [^2]: Matrices work as well, but will automatically be converted to dataframes.
 [^3]: In particular, the row and column names are in the same order and the optional columns are preserved.
 [^4]: The optimum of ASW Label is 1, which is typically however not achieved on real-world datasets. Also, the optimum of ASW Batch can vary, depending on the class distributions of the batches.
-[^5]: E.g. consider a BERT call 8 batches and 8 processes. With `corereduction=2`, the number of processes for the following adjustment steps would be set to $8/2=4$, which is the maximum number of usable processes for this example.
+[^5]: E.g. consider a BERT call with 8 batches and 8 processes. Further adjustment is not possible with this number of processes, since batches are always processed in pairs. With `corereduction=2`, the number of processes for the following adjustment steps would be set to $8/2=4$, which is the maximum number of usable processes for this example.
