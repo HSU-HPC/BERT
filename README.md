@@ -106,7 +106,7 @@ In the following, we list the respective meaning of each parameter:
 - `cores`: The number of cores (processes) to use for parallel adjustment. Increasing this parameter can speed up the batch effect adjustment considerably, in particular for large datasets. If possible, the processes are spawned by forking -- otherwise, BERT uses `PSOCKCluster`. A value between $2$ and $4$ is a reasonable choice for typical commodity hardware.
 - `stopParBatches` Positive integer indicating the minimum number of batches required at a hierarchy level to proceed with parallelized adjustment. If the number of batches is smaller, adjustment will be performed sequentially to avoid communication overheads.
 - `corereduction` Positive integer indicating the factor by which the number of processes should be reduced, once no further adjustment is possible for the current number of batches.[^5]
-- `mpi`: A boolean to (de)activate the MPI backend. If `TRUE`, this will replace the default `ForkCluster` or `PSOCKCluster`.
+- `mpi`: A boolean to (de)activate the MPI backend. If `TRUE`, this will replace the default `ForkCluster` or `PSOCKCluster`. *This feature is experimental.*
 - `backend`: The backend to use for inter-process communication. Possible choices are `default` and `file`, where the former refers to the default communication backend of the requested parallelization mode and the latter will create temporary `.rds` files for data communication. 'default' is usually faster for small to medium sized datasets.
 
 ## Examples
