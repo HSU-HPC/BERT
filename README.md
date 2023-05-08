@@ -26,7 +26,7 @@ devtools::install()
 ```
 Alternatively, BERT may also be installed directly from GitHub using 
 ```R
-devtools::install_github("HSU-HPC/BERT/BERT")
+devtools::install_github("HSU-HPC/BERT")
 ```
 ### Additional Features
 In order to use the MPI backend, users should install the packages `Rmpi` and `doMPI` on their system. Note, that this requires a working MPI installation on your system.
