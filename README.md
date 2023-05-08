@@ -21,7 +21,7 @@ BiocManager::install("limma")
 ```
 Then, download and unzip this GitHub repository. Finally, set the working directory of your R interpreter to the base directory[^1] of the package and install the package, e.g.
 ```R
-setwd("/home/my_user/Downloads/BERT/BERT")
+setwd("/home/my_user/Downloads/BERT")
 devtools::install()
 ```
 Alternatively, BERT may also be installed directly from GitHub using 
