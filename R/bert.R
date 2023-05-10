@@ -59,7 +59,7 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
   `%dopar%` <- foreach::`%dopar%`
   chunk <- NULL
   # parallel adjustment as far as possible for this chunk
-  adjusted_data <- foreach::foreach(chunk=iterators::iter(chunks), .combine = rbind) %dopar% {
+  adjusted_data <- foreach::foreach(chunk=iterators::iter(chunks), .combine = rbind, .export = "adjustment_step") %dopar% {
     if(backend=="file"){
       is_rank_1 <- (chunk==chunks[1])
       # read dataframe containing the adjusted data
