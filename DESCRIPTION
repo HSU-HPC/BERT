@@ -27,5 +27,8 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0),
     doMPI,
-    Rmpi
+    Rmpi,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
+VignetteBuilder: knitr
