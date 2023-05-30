@@ -26,12 +26,12 @@ chunk_data <- function(data, n, backend="default"){
   counter <- 1
   for(split in splits){
     # select sub-df
-    data_sub = data[(data$"Batch")%in%split,]
+    data_sub <- data[(data$"Batch")%in%split,]
     if (backend=="file"){
       # save to file
-      tempfile_name = paste(tempfile(),".rds", sep="")
+      tempfile_name <- paste(tempfile(),".rds", sep="")
       saveRDS(data_sub, tempfile_name)
-      chunks = c(chunks, tempfile_name)
+      chunks <- c(chunks, tempfile_name)
     }else{
       # mus be default backend
       chunks[[counter]] <- data_sub
@@ -171,7 +171,7 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontro
   # compute ASWs, if required
   if(qualitycontrol){
     logging::loginfo("Acquiring quality metrics before batch effect correction.")
-    asws_prior = compute_asw(data)
+    asws_prior <- compute_asw(data)
   }
   
   if(mpi){
@@ -272,7 +272,7 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontro
   # compute ASWs, if required
   if(qualitycontrol){
     logging::loginfo("Acquiring quality metrics after batch effect correction.")
-    asws_after = compute_asw(data)
+    asws_after <- compute_asw(data)
     
     # batch information
     if(!is.na(asws_prior$Batch)){

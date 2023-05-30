@@ -39,11 +39,11 @@ generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes,
   # the class values we may have
   potential_classes <- 1:classes
   if(deterministic){
-    classvector = rep(0, batches*samplesperbatch)
+    classvector <- rep(0, batches*samplesperbatch)
     for(b in unique(batchvector)){
-      classvector[batchvector==b] = (1:samplesperbatch)%%classes
+      classvector[batchvector==b] <- (1:samplesperbatch)%%classes
     }
-    classvector = classvector+1
+    classvector <- classvector+1
   }else{
     # randomly select the class labels for each sample, with equal probability!
     classvector <- sample(potential_classes, batches*samplesperbatch, replace = TRUE)
@@ -82,9 +82,9 @@ generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes,
   # introduce missing values for each batch --> TMT like
   for(b in unique(batchvector)){
     # randomly select features to be missing
-    missingindices = sample(start_idx:features, round(mvstmt*features, digits = 0))
+    missingindices <- sample(start_idx:features, round(mvstmt*features, digits = 0))
     # indices of samples from this batch
-    batch_indices = which(batchvector==b)
+    batch_indices <- which(batchvector==b)
     # set values to NA
     values[batch_indices, missingindices] <- NA
   }
@@ -142,9 +142,9 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
     }
     prob2 <- 1-prob1
     # all samples from this batch
-    indices = which(batchvector==b)
+    indices <- which(batchvector==b)
     # now overwrite the class labels --> this time with unbalanced datasets
-    classvector[indices] = sample(c(1,2), size = length(indices), replace = TRUE, prob = c(prob1, prob2))
+    classvector[indices] <- sample(c(1,2), size = length(indices), replace = TRUE, prob = c(prob1, prob2))
   }
   
   # make matrix for the numeric expression values
@@ -180,9 +180,9 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
   # introduce missing values for each batch --> TMT like
   for(b in unique(batchvector)){
     # randomly select features to be missing
-    missingindices = sample(start_idx:features, round(mvstmt*features, digits = 0))
+    missingindices <- sample(start_idx:features, round(mvstmt*features, digits = 0))
     # indices of samples from this batch
-    batch_indices = which(batchvector==b)
+    batch_indices <- which(batchvector==b)
     # set values to NA
     values[batch_indices, missingindices] <- NA
   }

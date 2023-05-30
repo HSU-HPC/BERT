@@ -92,6 +92,6 @@ removeBatchEffectRefs <- function(x,batch,references)
   beta[is.na(beta)] <- 0
   # now on full data
   x <- as.matrix(x)
-  x[adjustable, ] = as.matrix(x[adjustable, ]) - beta %*% t(X.batch)
+  x[adjustable, ] <- as.matrix(x[adjustable, ]) - beta %*% t(X.batch)
   return(x)
 }
