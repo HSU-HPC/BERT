@@ -13,7 +13,147 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+## Introduction
 
-```{r setup}
-library(BERT)
+## Introduction
+BERT (Batch-Effect Removal with Trees) offers flexible and efficient batch effect correction of omics data, while providing maximum tolerance to missing values. Tested on multiple datasets from proteomic analyses, BERT offered a typical 5-10x runtime improvement over existing methods, while retaining more numeric values and preserving batch effect reduction quality.
+
+## Data Preparation
+
+As input, BERT requires a dataframe[^2] with samples in rows and features in columns. For each sample, the respective batch should be indicated by an integer in a corresponding column labelled *Batch*. Missing values should be labelled as `NA`. A valid example dataframe could look like this:
+
+```{r}
+example = data.frame(feature_1 = stats::rnorm(5), feature_2 = stats::rnorm(5), Batch=c(1,1,2,2,2))
+example
 ```
+
+ 
+ Note that each batch should contain at least two samples. Optional columns that can be passed are
+ - `Label` A column with integers indicating the (known) class for each sample. `NA` is not allowed. BERT may use this columns and `Batch` to compute quality metrics after batch effect correction.
+ - `Sample` A sample name. This column is ignored by BERT and can be used to provide meta-information for further processing.
+ - `Cov_1`, `Cov_2`, ..., `Cov_x`: One or multiple columns with integers, indicating one or several covariate levels. `NA` is not allowed. If this(these) column(s) is present, BERT will pass them as covariates to the the underlying batch effect correction method. As an example, this functionality can be used to preserve differences between healthy/tumorous samples, if some of the batches exhibit strongly variable class distributions. Note that BERT requires at least two numeric values per batch and unique covariate level to adjust a feature. Features that don't satisfy this condition in a specific batch are set to `NA` for that batch. 
+- `Reference` A column with integers from $\mathbb{N}_0$ that indicate, whether a sample should be used for "learning" the transformation for batch effect correction or whether the sample should be co-adjusted using the learned transformation from the other samples. `NA` is not allowed. This feature can be used, if some batches contain unique classes or samples with unknown classes which would prohibit the usage of covariate columns. If the column contains a `0` for a sample, this sample will be co-adjusted. Otherwise, the sample should contain the respective class (encoded as integer). Note that BERT requires at least two references of common class per adjustment step and that the `Reference` column is mutually exclusive with covariate columns.
+
+## Basic Usage
+BERT can be invoked by importing the `BERT` library and calling the `BERT` function. The batch effect corrected data is returned as a dataframe that mirrors the input dataframe[^3].
+
+```{r}
+library(BERT)
+# generate test data with 10% missing values as provided by the BERT library
+dataset_raw <- generateDataset(features=600, batches=10, samplesperbatch=10, mvstmt=0.1, classes=2)
+# apply BERT
+dataset_adjusted <- BERT(dataset_raw)
+```
+BERT uses the  `logging` library to convey live information to the user during the adjustment procedure. The algorithm first verifies the shape and suitability of the input dataframe (lines 1-6) before continuing with the actual batch effect correction (lines 8-15). BERT measure batch effects before and after the correction step by means of the average silhouette score (ASW) with respect to batch and labels (lines 7 and 16). The ASW Label should increase in a successful batch effect correction, whereas low values ($\leq 0$) are desireable for the ASW Batch[^4]. Finally, BERT prints the total function execution time (including the computation time for the quality metrics).
+
+## Advanced Options
+BERT offers a large number of parameters to customize the batch effect adjustment. The full function call, including all defaults is
+```R
+BERT(data,cores = 1,combatmode = 1,method = "ComBat",qualitycontrol = TRUE,verify = TRUE,mpi = FALSE,stopParBatches = 4,corereduction = 2,backend = "default")
+```
+In the following, we list the respective meaning of each parameter:
+- `data`: The input dataframe or matrix to adjust. See [Data Preparation](#data-preparation) for detailed formatting instructions.
+- `method`: The method to use for the underlying batch effect correction steps. Should be either `ComBat`, `limma` for `limma::removeBatchEffects` or `ref` for adjustment using specified references (cf. [Data Preparation](#data-preparation)). The underlying batch effect adjustment method for `ref` is a modified version of the `limma` method.
+- `combatmode` An integer that encodes the parameters to use for ComBat.
+
+  | Value | par.prior | mean.only 
+  | --- | --- | ---
+  | 1 | TRUE | FALSE
+  | 2 | TRUE | TRUE
+  | 3 | FALSE | FALSE
+  | 4 | FALSE | TRUE
+
+  The value of this parameter will be ignored, if `method!="ComBat"`.
+- `qualitycontrol`: A boolean to (de)activate the ASW computation. Deactivating the ASW computations accelerates the computations.
+- `verify`: A boolean to (de)activate the initial format check of the input data. Deactivating this verification step accelerates the computations.
+- `cores`: The number of cores (processes) to use for parallel adjustment. Increasing this parameter can speed up the batch effect adjustment considerably, in particular for large datasets. If possible, the processes are spawned by forking -- otherwise, BERT uses `PSOCKCluster`. A value between $2$ and $4$ is a reasonable choice for typical commodity hardware.
+- `stopParBatches` Positive integer indicating the minimum number of batches required at a hierarchy level to proceed with parallelized adjustment. If the number of batches is smaller, adjustment will be performed sequentially to avoid communication overheads.
+- `corereduction` Positive integer indicating the factor by which the number of processes should be reduced, once no further adjustment is possible for the current number of batches.[^5]
+- `mpi`: A boolean to (de)activate the MPI backend. If `TRUE`, this will replace the default `ForkCluster` or `PSOCKCluster`. *Cores must set to the total number of processes when using the MPI backend.*
+- `backend`: The backend to use for inter-process communication. Possible choices are `default` and `file`, where the former refers to the default communication backend of the requested parallelization mode and the latter will create temporary `.rds` files for data communication. 'default' is usually faster for small to medium sized datasets.
+
+
+## Examples
+
+In the following, we present simple cookbook examples for BERT usage. Note that ASWs (and runtime) will most likely differ on your machine, since the data generating process involves multiple random choices.
+
+#### Sequential Adjustment with limma
+
+
+```{r}
+# import BERT
+library(BERT)
+# generate data with 30 batches, 600 features, 15 samples per batch, 15% missing values and 2 classes
+dataset_raw <- generateDataset(features=600, batches=20, samplesperbatch=15, mvstmt=0.15, classes=2)
+# BERT
+dataset_adjusted <- BERT(dataset_raw, method="limma")
+```
+
+
+#### Parallel Batch Effect Correction with ComBat
+
+```{r}
+# import BERT
+library(BERT)
+# generate data with 30 batches, 600 features, 15 samples per batch, 15% missing values and 2 classes
+dataset_raw <- generateDataset(features=600, batches=20, samplesperbatch=15, mvstmt=0.15, classes=2)
+# BERT
+dataset_adjusted <- BERT(dataset_raw, cores=2)
+```
+
+
+#### BERT with Covariables
+
+```{r}
+# import BERT
+library(BERT)
+# generate data with 30 batches, 600 features, 15 samples per batch, 15% missing values and 2 classes
+dataset_raw <- generateDataset(features=600, batches=20, samplesperbatch=15, mvstmt=0.15, classes=2)
+# create covariable column with 2 possible values, e.g. male/female condition
+dataset_raw["Cov_1"] = sample(c(1,2), size=dim(dataset_raw)[1], replace=TRUE)
+# BERT
+dataset_adjusted <- BERT(dataset_raw)
+```
+
+
+#### BERT with references
+
+```{r}
+# import BERT
+library(BERT)
+# generate data with 4 batches, 600 features, 15 samples per batch, 15% missing values and 2 classes
+dataset_raw <- generateDataset(features=600, batches=4, samplesperbatch=15, mvstmt=0.15, classes=2)
+# create reference column with default value 0.  The 0 indicates, that the respective sample should be co-adjusted only.
+dataset_raw[, "Reference"] <- 0
+# randomly select 2 references per batch and class - in practice, this choice will be determined by external requirements (e.g. class known for only these samples)
+batches <- unique(dataset_raw$Batch) # all the batches
+for(b in batches){ # iterate over all batches
+    # references from class 1
+    ref_idx = sample(which((dataset_raw$Batch==b)&(dataset_raw$Label==1)), size=2, replace=FALSE)
+    dataset_raw[ref_idx, "Reference"] <- 1
+    # references from class 2
+    ref_idx = sample(which((dataset_raw$Batch==b)&(dataset_raw$Label==2)), size=2, replace=FALSE)
+    dataset_raw[ref_idx, "Reference"] <- 2
+}
+# BERT
+dataset_adjusted <- BERT(dataset_raw, method="ref")
+```
+
+
+## Issues
+Please report any issues in the GitHub forum, the BioConductor forum or contact [the authors](mailto:schumany@hsu-hh.de,schlumbohm@hsu-hh.de) directly.
+
+## License
+
+This code is published under the GPLv3.0 License and is available for non-commercial academic purposes.
+
+## Reference
+Please cite our manuscript, if you use BERT for your research:
+*Yannis Schumann, Simon Schlumbohm et al., BERT - Batch Effect Reduction Trees with Missing Value Tolerance, 2023*
+
+[^1]: The base directory contains the folders *man*,*R* and *tests*. 
+[^2]: Matrices work as well, but will automatically be converted to dataframes.
+[^3]: In particular, the row and column names are in the same order and the optional columns are preserved.
+[^4]: The optimum of ASW Label is 1, which is typically however not achieved on real-world datasets. Also, the optimum of ASW Batch can vary, depending on the class distributions of the batches.
+[^5]: E.g. consider a BERT call with 8 batches and 8 processes. Further adjustment is not possible with this number of processes, since batches are always processed in pairs. With `corereduction=2`, the number of processes for the following adjustment steps would be set to $8/2=4$, which is the maximum number of usable processes for this example.
+
