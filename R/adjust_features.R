@@ -178,7 +178,7 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
     }else if (method=="ref"){
       total_data[, names(total_adjustable_data)] <- suppressMessages(t(removeBatchEffectRefs(x = t(total_adjustable_data), batch = batch_list, references=reference_list)))
     }else{
-      stop("Unknown adjustment method.")
+      stop()
     }
   }else{
     if(method=="ComBat"){
@@ -192,7 +192,7 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
       logging::logwarn("Reference adjustment ingores covariate levels.")
       total_data[, names(total_adjustable_data)] <- suppressMessages(t(removeBatchEffectRefs(x = t(total_adjustable_data), batch = batch_list, references=reference_list)))
     }else{
-      stop("Unknown adjustment method.")
+      stop()
     }
     
   }
