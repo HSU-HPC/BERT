@@ -35,13 +35,13 @@ generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes,
   # condition-specific offset
   bix <- matrix(unlist(stats::rnorm(features*classes, mean=0, sd=1)), nrow=features, ncol=classes)
   # evenly distribute samples over batches
-  batchvector <- comprehenr::to_vec(for(i in 1:(batches*samplesperbatch)) (i %% batches)+1)
+  batchvector <- comprehenr::to_vec(for(i in seq_len(batches*samplesperbatch)) (i %% batches)+1)
   # the class values we may have
-  potential_classes <- 1:classes
+  potential_classes <- seq_len(classes)
   if(deterministic){
     classvector <- rep(0, batches*samplesperbatch)
     for(b in unique(batchvector)){
-      classvector[batchvector==b] <- (1:samplesperbatch)%%classes
+      classvector[batchvector==b] <- seq_len(samplesperbatch)%%classes
     }
     classvector <- classvector+1
   }else{
@@ -52,7 +52,7 @@ generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes,
   values <- matrix(0, ncol=features, nrow=batches*samplesperbatch)
   
   # fill with data, based on condition
-  for(i in 1:(batches*samplesperbatch)){
+  for(i in seq_len(batches*samplesperbatch)){
     values[i,] <- a + bix[, classvector[i]]
   }
   
@@ -125,11 +125,11 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
   # condition-specific offset
   bix <- matrix(unlist(stats::rnorm(features*2, mean=0, sd=1)), nrow=features, ncol=2)
   # we only have two classes
-  potential_classes <- 1:2
+  potential_classes <- seq_len(2)
   # randomly select the class labels for each sample, with equal probability (here!)
   classvector <- sample(potential_classes, batches*samplesperbatch, replace = TRUE)
   # evenly distribute samples over batches
-  batchvector <- comprehenr::to_vec(for(i in 1:(batches*samplesperbatch)) (i %% batches)+1)
+  batchvector <- comprehenr::to_vec(for(i in seq_len(batches*samplesperbatch)) (i %% batches)+1)
   
   # make classes unbalanced
   for(b in unique(batchvector)){
@@ -151,7 +151,7 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
   values <- matrix(0, ncol=features, nrow=batches*samplesperbatch)
   
   # fill with data, based on condition
-  for(i in 1:(batches*samplesperbatch)){
+  for(i in seq_len(batches*samplesperbatch)){
     values[i,] <- a + bix[, classvector[i]]
   }
   

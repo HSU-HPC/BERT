@@ -14,7 +14,7 @@ identify_references <- function(batch, references){
   batch1 <- batch_vals[1]
   batch2 <- batch_vals[2]
   # assemble references
-  possible_idx <- 1:length(batch)
+  possible_idx <- seq_len(length(batch))
   ref_idx <- c()
   
   for(cl in unique(references)){
@@ -88,7 +88,7 @@ removeBatchEffectRefs <- function(x,batch,references)
   designref <- matrix(1,nrow(Xref.batch),1)
   xref <- x[adjustable,isref]
   fit <- limma::lmFit(xref, cbind(designref, Xref.batch))
-  beta <- fit$coefficients[,-(1:ncol(design)),drop=FALSE]
+  beta <- fit$coefficients[,-(seq_len(ncol(design))),drop=FALSE]
   beta[is.na(beta)] <- 0
   # now on full data
   x <- as.matrix(x)

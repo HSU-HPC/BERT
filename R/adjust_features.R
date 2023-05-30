@@ -52,7 +52,7 @@ get_adjustable_features_with_mod <- function(data_batch, mod_batch) {
   # default true
   available_features <- seq(TRUE, TRUE, length.out=dim(data_batch)[2])
   
-  for(u_idx in 1:dim(uniques)[1]){
+  for(u_idx in seq_len(dim(uniques)[1])){
     # the respective unique comb. of covariables
     u <- uniques[u_idx, ]
     # samples to select
