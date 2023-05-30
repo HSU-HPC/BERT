@@ -1,6 +1,6 @@
 test_that("correctly counts numeric values", {
   # generate dataset, 3 samples, 5 features
-  y <- matrix(rnorm(10*9),3,5)
+  y <- matrix(rnorm(3*5),3,5)
   y[1,1] <- NA
   y[1:3, 2] <- NA
   y[1:2, 3] <- NA
@@ -20,7 +20,7 @@ test_that("deterministic generation of datasets works", {
 
 test_that("Ignores Batch, Label, Sample and covariable columns", {
   # generate dataset, 3 samples, 5 features
-  y <- matrix(rnorm(10*9),3,5)
+  y <- matrix(rnorm(3*5),3,5)
   y[1,1] <- NA
   y[1:3, 2] <- NA
   y[1:2, 3] <- NA
@@ -35,7 +35,7 @@ test_that("Ignores Batch, Label, Sample and covariable columns", {
 
 test_that("ASW ignores Sample and covariable columns", {
   # generate dataset, 3 samples, 5 features
-  y <- matrix(rnorm(10*9),3,5)
+  y <- matrix(rnorm(3*5),3,5)
   y[1,1] <- NA
   y[1:3, 2] <- NA
   y[1:2, 3] <- NA
