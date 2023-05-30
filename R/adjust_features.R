@@ -15,7 +15,7 @@ get_adjustable_features <- function(data_batch) {
   # batch/covariate level
   if(dim(data_batch)[1]<=1){
     logging::logerror("Not enough samples at batch/covariate level.")
-    stop("Fatal error.")
+    stop()
   }
   # reduce to references, if applicable
   if("Reference" %in% names(data_batch)){

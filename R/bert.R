@@ -78,7 +78,7 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
     # don't allow covariables AND references
     if((dim(mod)[2]) & ("Reference" %in% names(data))){
       logging::logerror("Covariable and reference columns should not exist simultanously.")
-      stop("Fatal error.")
+      stop()
     }
     
     # number of batches at current level
@@ -233,7 +233,7 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontro
   # don't allow covariables AND references
   if((dim(mod)[2]) & ("Reference" %in% names(data))){
     logging::logerror("Covariable and reference columns should not exist simultanously.")
-    stop("Fatal error.")
+    stop()
   }
   hierarchy_level <- 1
   while (num_batches > 1) {
