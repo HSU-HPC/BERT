@@ -39,7 +39,7 @@ verify_references <- function(batch){
 #' @return The data with the replaced MVs
 #' @export
 replace_missing <- function(data){
-  data[sapply(data, is.nan)] <- NA
+  data[vapply(data, is.nan, logical(dim(data)[1]))] <- NA
   data[is.null(data)] <- NA
   return(data)
 }
@@ -76,7 +76,7 @@ format_DF <- function(data){
       all_names <- character(0)
     }
   }else{
-    dtypes <- sapply(data[, all_names], typeof)
+    dtypes <- vapply(data[, all_names], typeof, character(1))
     all_names <- all_names[dtypes=="character"]
   }
   
