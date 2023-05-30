@@ -3,7 +3,6 @@
 #' @param dataset Dataframe in the shape (samples, features) with additional
 #' column Cov_1
 #' @return Dataset without column Cov_1.
-#' @export
 strip_Covariable <- function(dataset){
   ds <- dataset[, !names(dataset) %in% c("Cov_1")] 
   return(ds)
@@ -28,6 +27,10 @@ strip_Covariable <- function(dataset){
 #' @param deterministic Whether to assigns the classes deterministically,
 #' instead of random sampling
 #' @return A dataframe containing the simulated data.
+#' @examples
+#' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+#' # two genotypes
+#' data = generateDataset(1000,5,10,2)
 #' @export
 generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes, housekeeping = NULL, deterministic = FALSE){
   # genewise offset
@@ -118,6 +121,10 @@ generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes,
 #' Else, housepeeping indicates the fraction of of housekeeping features.
 #' @return A dataframe containing the simulated data. Column Cov_1 will contain
 #' the simulated, imbalanced labels.
+#' @examples
+#' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+#' # two genotypes. The class ratio will either be 7:3 or 3:7 per batch.
+#' data = generateDataset(1000,5,10,0.3)
 #' @export
 generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, imbalcov, housekeeping = NULL){
   # genewise offset
@@ -207,6 +214,12 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
 #' columns Batch and Label.
 #' @return List with fields "Label" and "Batch" for the ASW with regards to Label
 #' and Batch respectively.
+#' @examples
+#' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+#' # two genotypes
+#' data = generateDataset(1000,5,10,2)
+#' asw = compute_asw(data)
+#' asw
 #' @export
 compute_asw <- function(dataset){
   dataset_nocov <- dataset [ , !grepl( "Cov" , names( dataset  ) ) ]
@@ -246,6 +259,11 @@ compute_asw <- function(dataset){
 #' @param dataset Dataframe in the shape (samples, features) with optional
 #' columns "Batch", "Sample" or "Label".
 #' @return Integer indicating the number of numeric values
+#' @examples
+#' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+#' # two genotypes
+#' data = generateDataset(1000,5,10,2)
+#' count_existing(data)
 #' @export
 count_existing <- function(dataset){
   dataset_nocov <- dataset [ , !grepl( "Cov" , names( dataset  ) ) ]

@@ -3,7 +3,6 @@
 #' @param references vector that contains 0, if the sample is to be c-adjusted
 #' and a class otherwise
 #' @return the indices of the reference samples
-#' @export
 identify_references <- function(batch, references){
   # numbers of the two batches <- must be two
   batch_vals <- unique(batch)
@@ -52,7 +51,6 @@ identify_references <- function(batch, references){
 #' @param idx the vector indicating whether the respective sample is to be used
 #' as references
 #' @return vector indicating whether each feature can be adjusted
-#' @export
 identify_adjustableFeatures_refs <- function(x, batch, idx){
   # the unique batches
   batch_vals <- unique(batch)# definitely 2, otherwise would have crashed
@@ -70,7 +68,6 @@ identify_adjustableFeatures_refs <- function(x, batch, idx){
 #' @param references a vector of integers, indicating whether the corresponding
 #' sample is to be co-adjusted (0) or may be used as a reference (>0)
 #' @return the corrected data matrix
-#' @export 
 removeBatchEffectRefs <- function(x,batch,references)
 {
   isref <- identify_references(batch, references)

@@ -4,7 +4,6 @@
 #'The idea is, that Label, Batch and Covariables should only be integers
 #' @param column The categorical vector
 #' @return The encoded vector
-#' @export
 ordinal_encode <- function(column){
   temp <- as.integer(factor(column, levels=unique(column)))
   return(temp)
@@ -14,7 +13,6 @@ ordinal_encode <- function(column){
 #' (if it is present at all)
 #' @param batch the dataframe for this batch (samples in rows, samples in columns)
 #' @return either TRUE (everything correct) or FALSE (something is not correct)
-#' @export
 verify_references <- function(batch){
   if ("Reference" %in% names(batch)){
     # no missing values
@@ -37,7 +35,6 @@ verify_references <- function(batch){
 #' 
 #' @param data The data as dataframe
 #' @return The data with the replaced MVs
-#' @export
 replace_missing <- function(data){
   data[vapply(data, is.nan, logical(dim(data)[1]))] <- NA
   data[is.null(data)] <- NA

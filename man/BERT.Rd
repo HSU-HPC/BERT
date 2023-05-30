@@ -69,3 +69,9 @@ all columns named "Cov_1", "Cov_2", ... will be considered as covariate
 for adjustment. Columns labelled "Label" and "Sample" will be ignored,
 all other columns are assumed to contain data.
 }
+\examples{
+# generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+# two genotypes
+data = generateDataset(1000,5,10,2)
+corrected = BERT(data)
+}

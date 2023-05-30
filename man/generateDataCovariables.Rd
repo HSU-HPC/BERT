@@ -40,3 +40,8 @@ the simulated, imbalanced labels.
 \description{
 The data will be already in the correct format for BERT.
 }
+\examples{
+# generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+# two genotypes. The class ratio will either be 7:3 or 3:7 per batch.
+data = generateDataset(1000,5,10,0.3)
+}

@@ -9,7 +9,6 @@
 #' "Label", "Reference" and "Sample".
 #' @return A logical with TRUE for adjustable features and FALSE for features
 #' with too many missing values.
-#' @export
 get_adjustable_features <- function(data_batch) {
   # should have at least 2 samples -> otherwise, we don't have enough samples at this
   # batch/covariate level
@@ -43,7 +42,6 @@ get_adjustable_features <- function(data_batch) {
 #' Contains only the covariates as covariates.
 #' @return A logical with TRUE for adjustable features and FALSE for features
 #' with too many missing values.
-#' @export
 get_adjustable_features_with_mod <- function(data_batch, mod_batch) {
   
   # unique covs

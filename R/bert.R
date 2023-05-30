@@ -8,7 +8,6 @@
 #'data chunks between the processes.
 #'@return Vector with the absolute paths to the temporary files, where the data
 #'is stored
-#'@export
 chunk_data <- function(data, n, backend="default"){
   unique_batches <- unique(data$"Batch")
   num_batches <- length(unique_batches)
@@ -54,7 +53,6 @@ chunk_data <- function(data, n, backend="default"){
 #'are "default" and "file". The latter will use temp files for communicating
 #'data chunks between the processes.
 #'@return dataframe with the adjusted matrix
-#'@export
 parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="default"){
   `%dopar%` <- foreach::`%dopar%`
   chunk <- NULL
@@ -153,6 +151,11 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #' after adjusting all sub-trees as far as possible with the previous number of cores.
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
+#' @examples
+#' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+#' # two genotypes
+#' data = generateDataset(1000,5,10,2)
+#' corrected = BERT(data)
 #' @export
 BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontrol=TRUE, verify=TRUE, mpi=FALSE, stopParBatches = 4, corereduction=2, backend="default"){
   # store original cores
