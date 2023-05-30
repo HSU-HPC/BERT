@@ -22,7 +22,6 @@ Imports:
     janitor (>= 2.2.0),
     limma (>= 3.46.0),
     logging (>= 0.10-108),
-    lubridate (>= 1.8.0),
     parallel,
     sva (>= 3.38.0)
 Suggests: 
