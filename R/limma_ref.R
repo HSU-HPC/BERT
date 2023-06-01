@@ -22,8 +22,10 @@ identify_references <- function(batch, references){
             t2 <- (references==cl)&(batch==batch2)
             min_ref <- min(sum(t1), sum(t2))
             if(min_ref>1){
-                idx_1 <- sample(possible_idx[t1], size = min_ref, replace = FALSE)
-                idx_2 <- sample(possible_idx[t2], size = min_ref, replace = FALSE)
+                idx_1 <- sample(
+                    possible_idx[t1], size = min_ref, replace = FALSE)
+                idx_2 <- sample(
+                    possible_idx[t2], size = min_ref, replace = FALSE)
                 ref_idx <- c(ref_idx, idx_1)
                 ref_idx <- c(ref_idx, idx_2)
             }else if(min_ref==1){
