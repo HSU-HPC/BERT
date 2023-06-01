@@ -55,6 +55,36 @@ replace_missing <- function(data){
 format_DF <- function(data){
   logging::loginfo("Formatting Data.")
   
+  if(typeof(data)=="S4"){
+    # Summarized Experiment
+    logging::loginfo("Recognized input as S4 class - assuming SummarizedExperiment")
+    if(length(SummarizedExperiment::assays(data))!=1){
+      logging::logerror("BERT only supports batch effect correction for SummarizedExperiments with a single assay.")
+      stop()
+    }
+    logging::loginfo("Typecasting input to dataframe.")
+    # obtain raw data from assay with observations in rows and features in columns
+    raw_data <- data.frame(t(SummarizedExperiment::assay(data)))
+    # obtain batch/label/sample/reference column
+    raw_data["Batch"] <- SummarizedExperiment::colData(data)$Batch
+    if("Sample" %in% names(SummarizedExperiment::colData(data))){
+      raw_data["Sample"] <- SummarizedExperiment::colData(data)$Sample
+    }
+    if("Label" %in% names(SummarizedExperiment::colData(data))){
+      raw_data["Label"] <- SummarizedExperiment::colData(data)$Label
+    }
+    if("Reference" %in% names(SummarizedExperiment::colData(data))){
+      raw_data["Reference"] <- SummarizedExperiment::colData(data)$Reference
+    }
+    # potential covariables
+    cov_names <- names(SummarizedExperiment::colData(data))[grepl( "Cov" , names( SummarizedExperiment::colData(data)  ) )]
+    if(length(cov_names)>0){
+      for(n in cov_names){
+        raw_data[n] <- SummarizedExperiment::colData(data)[n][,1]
+      }
+    }
+    data <-  raw_data
+  }
   if(is.matrix(data)){
     logging::loginfo("Typecasting input to dataframe.")
     data <- data.frame(data)

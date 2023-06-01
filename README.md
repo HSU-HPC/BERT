@@ -268,7 +268,7 @@ Please report any issues in the GitHub forum or contact [the authors](mailto:sch
 
 ## License
 
-This code is published under the GPLv3.0 License and is available for non-commercial academic purposes.
+This code is published under the GPLv3.0 License.
 
 ## Reference
 Please cite our manuscript, if you use BERT for your research:

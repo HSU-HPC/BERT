@@ -23,12 +23,14 @@ Imports:
     limma (>= 3.46.0),
     logging (>= 0.10-108),
     parallel,
-    sva (>= 3.38.0)
+    sva (>= 3.38.0),
+    SummarizedExperiment
 Suggests: 
     testthat (>= 3.0.0),
-    doMPI,
-    Rmpi,
     knitr,
     rmarkdown
+Enhances:
+    doMPI,
+    Rmpi
 Config/testthat/edition: 3
 VignetteBuilder: knitr

@@ -37,6 +37,38 @@ test_that("recognizes too low number of references",{
   expect_true(!verify_references(y))
 })
 
+test_that("casts SummarizedExperiment to dataframe",{
+  nrows <- 200
+  ncols <- 8
+  counts <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
+  colData <- data.frame(Batch=c(1,1,1,1,2,2,2,2))
+  y = SummarizedExperiment::SummarizedExperiment(assays=list(counts=counts), colData=colData)
+  y_df = format_DF(y)
+  # dimension correct
+  dimension = dim(y_df)
+  expect_true(all(dimension==c(8,201)))
+  
+  # label, sample and references can be appended
+  colData <- data.frame(Batch=c(1,1,1,1,2,2,2,2), "Reference"=c(1,1,0,0,1,1,0,0), "Label"=c(1,2,1,2,1,2,1,2), "Sample"=c(1,2,3,4,5,6,7,8))
+  y = SummarizedExperiment::SummarizedExperiment(assays=list(counts=counts), colData=colData)
+  y_df = format_DF(y)
+  # dimension correct
+  dimension = dim(y_df)
+  expect_true(all(dimension==c(8,204)))
+  
+  # check for covariables
+  nrows <- 10
+  ncols <- 8
+  counts <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
+  colData <- data.frame(Batch=c(1,1,1,1,2,2,2,2), "Label"=c(1,2,1,2,1,2,1,2), "Sample"=c(1,2,3,4,5,6,7,8), "Cov_1"=c(1,1,2,2,1,1,2,2))
+  y = SummarizedExperiment::SummarizedExperiment(assays=list(counts=counts), colData=colData)
+  y_df = format_DF(y)
+  # dimension correct
+  dimension = dim(y_df)
+  expect_true(all(dimension==c(8,14)))
+  
+})
+
 test_that("removes empty columns", {
   # generate dataset, 9 samples, 10 features
   y <- matrix(rnorm(10*9),9,10)

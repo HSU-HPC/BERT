@@ -164,6 +164,11 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontro
   # measure starting time
   total_start <- Sys.time()
   
+  # if SummarizedExperiment, we want to store the original input to preserve all metadata
+  if(typeof(data)=="S4"){
+    original_data = data
+  }
+  
   # format dataframe
   if(verify){
     data <- format_DF(data)
@@ -285,6 +290,15 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontro
     if(!is.na(asws_prior$Label)){
       logging::loginfo(paste("ASW Label was", asws_prior$Label, "prior to batch effect correction and is now", asws_after$Label,"."))
     }
+  }
+  
+  # if SummarizedExperiment, return as such object as well
+  if(typeof(data)=="S4"){
+    value = t(as.matrix(data))
+    rownames(value) = NULL
+    colnames(value) = NULL
+    SummarizedExperiment::assay(original_data) = value
+    data = original_data
   }
   
   # stop total timing measurement

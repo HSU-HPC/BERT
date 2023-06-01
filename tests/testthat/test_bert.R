@@ -107,6 +107,29 @@ test_that("BERT does not allow combination of covariable and reference columns",
   testthat::expect_error(BERT(y, 2, method="None"))
 })
 
+test_that("BERT likes SummarizedExperiments",{
+  nrows <- 200
+  ncols <- 8
+  counts <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
+  colData <- data.frame(Batch=c(1,1,1,1,2,2,2,2))
+  y = SummarizedExperiment::SummarizedExperiment(assays=list(counts=counts), colData=colData)
+  expect_error(BERT(y), NA)
+})
+
+
+test_that("BERT preserves order of samples and features", {
+  # generate dataset, 9 samples, 10 features
+  y <- matrix(rnorm(10*9),9,10)
+  y <- data.frame(y)
+  names(y) = c("A","B","C","D","E","F","G","H","I","J")
+  rownames(y) = c("F1","F2","F3","F4","F5","F6","F7","F8","F9")
+  y["Batch"] <- c(1,1,1,2,2,2,3,3,3)
+  # sequential
+  y_adj = BERT(y)
+  expect_true(all(names(y)==names(y_adj)))
+  rownames(all(rownames(y)==rownames(y_adj)))
+})
+
 test_that("bert works for simulated data without any formatting of the input -- BERT", {
   # generate dataset, 9 samples, 10 features
   y <- generateDataset(100,5,10,0.1,2)

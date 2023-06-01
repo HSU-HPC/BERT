@@ -55,7 +55,7 @@ get_adjustable_features_with_mod <- function(data_batch, mod_batch) {
     u <- uniques[u_idx, ]
     # samples to select
     cor <- apply(mod_batch, 1, function(x, y) x==y, u)
-    if(dim(mod_batch)[2]!=1){
+    if(dim(mod_batch)[2]>1){
       cor <- apply(cor, 2, function(x) Reduce("&", x))
     }
     # apply normal function
