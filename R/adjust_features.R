@@ -172,44 +172,46 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
         # if we use ComBat adjustment
         if(method=="ComBat"){
             total_data[, names(total_adjustable_data)] <- suppressMessages(
-                t(sva::ComBat(dat = t(total_adjustable_data),
-                              batch = batch_list, par.prior = parprior,
-                              mean.only = meanonly)))
+                t(sva::ComBat(
+                    dat = t(total_adjustable_data),
+                    batch = batch_list, par.prior = parprior,
+                    mean.only = meanonly)))
         }else if(method=="limma"){
             # if we use limma
             total_data[, names(total_adjustable_data)] <- t(
-                limma::removeBatchEffect(x = t(total_adjustable_data),
-                                         batch = batch_list))
+                limma::removeBatchEffect(
+                    x = t(total_adjustable_data), batch = batch_list))
         }else if (method=="None"){
             total_data[, names(total_adjustable_data)] <- total_adjustable_data
         }else if (method=="ref"){
             total_data[, names(total_adjustable_data)] <- t(
-                removeBatchEffectRefs(x = t(total_adjustable_data),
-                                      batch = batch_list,
-                                      references=reference_list))
+                removeBatchEffectRefs(
+                    x = t(total_adjustable_data),batch = batch_list,
+                    references=reference_list))
         }else{
             stop()
         }
     }else{
         if(method=="ComBat"){
             total_data[, names(total_adjustable_data)] <-
-                suppressMessages(t(sva::ComBat(dat = t(total_adjustable_data),
-                                               batch = batch_list,
-                                               mod=total_mod,
-                                               par.prior = parprior,
-                                               mean.only = meanonly)))
+                suppressMessages(t(
+                    sva::ComBat(dat = t(total_adjustable_data),
+                                batch = batch_list,
+                                mod=total_mod,par.prior = parprior,
+                                mean.only = meanonly)))
         }else if(method=="limma"){
             total_data[, names(total_adjustable_data)] <- t(
-                limma::removeBatchEffect(x = t(total_adjustable_data),
-                                         batch = batch_list, design=total_mod))
+                limma::removeBatchEffect(x = t(
+                    total_adjustable_data),batch = batch_list,
+                    design=total_mod))
         }else if (method=="None"){
             total_data[, names(total_adjustable_data)] <- total_adjustable_data
         }else if (method=="ref"){
             logging::logwarn("Reference adjustment ingores covariate levels.")
             total_data[, names(total_adjustable_data)] <- t(
-                removeBatchEffectRefs(x = t(total_adjustable_data),
-                                      batch = batch_list,
-                                      references=reference_list))
+                removeBatchEffectRefs(x = t(
+                    total_adjustable_data),
+                    batch = batch_list, references=reference_list))
         }else{
             stop()
         }
