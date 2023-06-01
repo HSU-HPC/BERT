@@ -58,8 +58,9 @@ format_DF <- function(data){
     
     if(typeof(data)=="S4"){
         # Summarized Experiment
-        logging::loginfo(paste("Recognized input as S4 class ",
-                               "- assuming SummarizedExperiment"))
+        logging::loginfo(paste(
+            "Recognized input as S4 class ",
+            "- assuming SummarizedExperiment"))
         if(length(SummarizedExperiment::assays(data))!=1){
             logging::logerror(paste("BERT only supports batch effect",
                                     "correction for SummarizedExperiments",
@@ -116,11 +117,12 @@ format_DF <- function(data){
     }
     
     if (length(all_names>0)){
-        logging::logwarn(paste("Identified", length(all_names),
-                               "categorical variables among batch, label",
-                               "and all covariates. Note that BERT",
-                               "requires integer values there.",
-                               "Will apply ordinal encoding."))
+        logging::logwarn(paste(
+            "Identified", length(all_names),
+            "categorical variables among batch, label",
+            "and all covariates. Note that BERT",
+            "requires integer values there.",
+            "Will apply ordinal encoding."))
         
         for(n in all_names){
             data[, n] <- ordinal_encode(data[[n]])
@@ -144,10 +146,11 @@ format_DF <- function(data){
     mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
     
     if(dim(mod)[2]!=0){
-        logging::loginfo(paste("BERT requires at least 2 numeric values per",
-                               "batch/covariate level. This may reduce the",
-                               "number of adjustable features considerably,",
-                               "depending on the quantification technique."))
+        logging::loginfo(paste(
+            "BERT requires at least 2 numeric values per",
+            "batch/covariate level. This may reduce the",
+            "number of adjustable features considerably,",
+            "depending on the quantification technique."))
     }
     
     # iterate over batches and remove numeric values, if a feature
@@ -162,9 +165,8 @@ format_DF <- function(data){
         if(dim(mod)[2]==0){
             adjustable_batch <- get_adjustable_features(data_batch)
         }else{
-            adjustable_batch <- get_adjustable_features_with_mod(data_batch,
-                                                                 data.frame(
-                                                                     mod_batch))
+            adjustable_batch <- get_adjustable_features_with_mod(
+                data_batch,data.frame(mod_batch))
         }
         # set features from this batch to missing, where adjustable_batch
         # is FALSE
@@ -178,9 +180,9 @@ format_DF <- function(data){
     # count missing values
     final_mvs <- sum(is.na(data))
     
-    logging::loginfo(paste("Introduced", final_mvs-inital_mvs,
-                           "missing values due to singular proteins",
-                           "at batch/covariate level."))
+    logging::loginfo(paste(
+        "Introduced", final_mvs-inital_mvs,
+        "missing values due to singular proteins","at batch/covariate level."))
     
     logging::loginfo("Done")
     
