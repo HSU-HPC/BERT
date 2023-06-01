@@ -8,7 +8,8 @@
 verify_references(batch)
 }
 \arguments{
-\item{batch}{the dataframe for this batch (samples in rows, samples in columns)}
+\item{batch}{the dataframe for this batch (samples in rows,
+samples in columns)}
 }
 \value{
 either TRUE (everything correct) or FALSE (something is not correct)

@@ -330,11 +330,11 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat",
     e1 = as.POSIXct(total_start,origin = "1970-01-01")
     execution_time <- as.numeric(a1) - as.numeric(e1)
     # get adjustment time in seconds
-    a2 = as.POSIXct(adjustment_end,origin = "1970-01-01")
-    e2 = as.POSIXct(adjustment_start,origin = "1970-01-01")
+    a2 <- as.POSIXct(adjustment_end,origin = "1970-01-01")
+    e2 <- as.POSIXct(adjustment_start,origin = "1970-01-01")
     adjustment_time <- as.numeric(a2) - as.numeric(e2)
     
-    frac = round(100 * as.numeric(adjustment_time) / as.numeric(execution_time),
+    frac <- round(100 * as.numeric(adjustment_time) / as.numeric(execution_time),
                  digits = 2)
     
     logging::loginfo(paste("Total function execution time is ",
