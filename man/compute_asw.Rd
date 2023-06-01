@@ -12,8 +12,8 @@ compute_asw(dataset)
 columns Batch and Label.}
 }
 \value{
-List with fields "Label" and "Batch" for the ASW with regards to Label
-and Batch respectively.
+List with fields "Label" and "Batch" for the ASW with regards to
+Label and Batch respectively.
 }
 \description{
 Columns labelled Batch, Sample, Label, Reference and Cov_1 will be ignored.
