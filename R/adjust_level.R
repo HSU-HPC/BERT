@@ -16,36 +16,36 @@
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
 adjustment_step_parallel <- function(data, mod, combatmode, method) {
-  
-  # get the unique batch values at this hierarchy level
-  unique_batches <- unique(data$Batch)
-  
-  # indices for every second batch
-  indices <- seq(1, length(unique_batches), by = 2)
-  
-  # define dopar in this namespace
-  `%dopar%` <- foreach::`%dopar%`
-  i <- NULL
-  # adjust the data at this hierarchy level
-  adjusted_data <-foreach::foreach(i = iterators::iter(indices),.combine = rbind, .export = c("get_adjustable_features", "adjust_node")) %dopar% {
-    # matrix / dataframe containing the adjusted data
-    tempMatrix <- NULL
-    if (i == length(unique_batches)) {
-      # odd number of batches and this is the last one
-      tempMatrix <- data[data$Batch == unique_batches[i],]
-    } else{
-      # can adjust a pair of batches (this and the last one)
-      tempMatrix <- adjust_node(data, unique_batches[i], unique_batches[i + 1], mod, combatmode, method)
-    }
-    # override batch description for the respectively adjusted batches
-    tempMatrix["Batch"] <- unique_batches[i]
     
-    # the adjusted data OR the single, unadjusted batch, if batch number is odd
-    tempMatrix
-  }
-  # adjusted data from this hierarchy level
-  return(adjusted_data)
-  
+    # get the unique batch values at this hierarchy level
+    unique_batches <- unique(data$Batch)
+    
+    # indices for every second batch
+    indices <- seq(1, length(unique_batches), by = 2)
+    
+    # define dopar in this namespace
+    `%dopar%` <- foreach::`%dopar%`
+    i <- NULL
+    # adjust the data at this hierarchy level
+    adjusted_data <-foreach::foreach(i = iterators::iter(indices),.combine = rbind, .export = c("get_adjustable_features", "adjust_node")) %dopar% {
+        # matrix / dataframe containing the adjusted data
+        tempMatrix <- NULL
+        if (i == length(unique_batches)) {
+            # odd number of batches and this is the last one
+            tempMatrix <- data[data$Batch == unique_batches[i],]
+        } else{
+            # can adjust a pair of batches (this and the last one)
+            tempMatrix <- adjust_node(data, unique_batches[i], unique_batches[i + 1], mod, combatmode, method)
+        }
+        # override batch description for the respectively adjusted batches
+        tempMatrix["Batch"] <- unique_batches[i]
+        
+        # the adjusted data OR the single, unadjusted batch, if batch number is odd
+        tempMatrix
+    }
+    # adjusted data from this hierarchy level
+    return(adjusted_data)
+    
 }
 
 
@@ -67,34 +67,34 @@ adjustment_step_parallel <- function(data, mod, combatmode, method) {
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
 adjustment_step <- function(data, mod, combatmode, method) {
-  
-  # get the unique batch values at this hierarchy level
-  unique_batches <- unique(data$Batch)
-  
-  # indices for every second batch
-  indices <- seq(1, length(unique_batches), by = 2)
-  
-  # define do in this namespace
-  `%do%` <- foreach::`%do%`
-  i <- NULL
-  # adjust the data at this hierarchy level
-  adjusted_data <- foreach::foreach(i = iterators::iter(indices), .combine = rbind) %do% {
-    # matrix / dataframe containing the adjusted data
-    tempMatrix <- NULL
-    if (i == length(unique_batches)) {
-      # odd number of batches and this is the last one
-      tempMatrix <- data[data$Batch == unique_batches[i],]
-    } else{
-      # can adjust a pair of batches (this and the last one)
-      tempMatrix <- adjust_node(data, unique_batches[i], unique_batches[i + 1], mod, combatmode, method)
+    
+    # get the unique batch values at this hierarchy level
+    unique_batches <- unique(data$Batch)
+    
+    # indices for every second batch
+    indices <- seq(1, length(unique_batches), by = 2)
+    
+    # define do in this namespace
+    `%do%` <- foreach::`%do%`
+    i <- NULL
+    # adjust the data at this hierarchy level
+    adjusted_data <- foreach::foreach(i = iterators::iter(indices), .combine = rbind) %do% {
+        # matrix / dataframe containing the adjusted data
+        tempMatrix <- NULL
+        if (i == length(unique_batches)) {
+            # odd number of batches and this is the last one
+            tempMatrix <- data[data$Batch == unique_batches[i],]
+        } else{
+            # can adjust a pair of batches (this and the last one)
+            tempMatrix <- adjust_node(data, unique_batches[i], unique_batches[i + 1], mod, combatmode, method)
+        }
+        # override batch description for the respectively adjusted batches
+        tempMatrix["Batch"] <- unique_batches[i]
+        # the adjusted data OR the single, unadjusted batch, if batch number is odd
+        tempMatrix
     }
-    # override batch description for the respectively adjusted batches
-    tempMatrix["Batch"] <- unique_batches[i]
-    # the adjusted data OR the single, unadjusted batch, if batch number is odd
-    tempMatrix
-  }
-  
-  # adjusted data from this hierarchy level
-  return(adjusted_data)
-  
+    
+    # adjusted data from this hierarchy level
+    return(adjusted_data)
+    
 }
