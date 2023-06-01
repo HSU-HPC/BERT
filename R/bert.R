@@ -341,8 +341,9 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat",
     e2 <- as.POSIXct(adjustment_start,origin = "1970-01-01")
     adjustment_time <- as.numeric(a2) - as.numeric(e2)
     
-    frac <- round(100 * as.numeric(adjustment_time) / as.numeric(execution_time),
-                 digits = 2)
+    frac <- round(
+        100 * as.numeric(adjustment_time) / as.numeric(execution_time),
+        digits = 2)
     
     logging::loginfo(paste("Total function execution time is ",
                            execution_time," s and adjustment time is ",
