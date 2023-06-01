@@ -121,7 +121,7 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #' for adjustment. Columns labelled "Label" and "Sample" will be ignored,
 #' all other columns are assumed to contain data.
 #'
-#' @param data Matrix or dataframe in the format (samples, features). 
+#' @param data Matrix dataframe/SummarizedExperiment in the format (samples, features). 
 #' Additional column names are "Batch", "Cov_X" (were X may be any number),
 #' "Label", "Sample" and "Reference".
 #' @param cores The number of cores to use for parallel adjustment. Increasing
@@ -149,7 +149,7 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #' are "default" and "file". The latter will use temp files for communicating
 #' data chunks between the processes.
 #' after adjusting all sub-trees as far as possible with the previous number of cores.
-#' @return A matrix/dataframe mirroring the shape of the input. The data will
+#' @return A matrix/dataframe/SummarizedExperiment mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
 #' @examples
 #' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and

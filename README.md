@@ -189,6 +189,19 @@ dataset_adjusted <- BERT(dataset_raw, cores=2)
 2023-05-04 08:51:38 INFO::Total function execution time is  6.19199800491333  s and adjustment time is  4.94132399559021 s ( 79.8 )
 ```
 
+#### Batch Effect Correction Using SummarizedExperiment
+
+```R
+nrows <- 200
+ncols <- 8
+expr_values <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
+# colData also takes further metadata information, such as Label, Sample,
+# Reference or Covariables
+colData <- data.frame(Batch=c(1,1,1,1,2,2,2,2))
+dataset_raw = SummarizedExperiment::SummarizedExperiment(assays=list(expr=expr_values), colData=colData)
+dataset_adjusted = BERT(dataset_raw)
+```
+
 #### BERT with Covariables
 
 ```R
@@ -281,7 +294,7 @@ Please cite our manuscript, if you use BERT for your research:
 > Yannis Schumann, Simon Schlumbohm et al., BERT - Batch Effect Reduction Trees with Tolerance to Missing Values, 2023
 
 [^1]: The base directory contains the folders *man*,*R* and *tests*. 
-[^2]: Matrices work as well, but will automatically be converted to dataframes.
+[^2]: Matrices and SummarizedExperiments work as well, but will automatically be converted to dataframes.
 [^3]: In particular, the row and column names are in the same order and the optional columns are preserved.
 [^4]: The optimum of ASW Label is 1, which is typically however not achieved on real-world datasets. Also, the optimum of ASW Batch can vary, depending on the class distributions of the batches.
 [^5]: E.g. consider a BERT call with 8 batches and 8 processes. Further adjustment is not possible with this number of processes, since batches are always processed in pairs. With `corereduction=2`, the number of processes for the following adjustment steps would be set to $8/2=4$, which is the maximum number of usable processes for this example.
