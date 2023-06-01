@@ -13,8 +13,8 @@ sub-matrices are stored}
 \item{method}{the BE-correction method to use. Possible choices are ComBat
 and limma}
 
-\item{combatmode}{The mode to use for combat (ignored if limma). Encoded options
-are the same as for HarmonizR}
+\item{combatmode}{The mode to use for combat (ignored if limma).
+Encoded options 'are the same as for HarmonizR}
 
 \item{backend}{The backend to choose for communicating the data, Valid choices
 are "default" and "file". The latter will use temp files for communicating

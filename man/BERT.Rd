@@ -18,7 +18,8 @@ BERT(
 )
 }
 \arguments{
-\item{data}{Matrix dataframe/SummarizedExperiment in the format (samples, features).
+\item{data}{Matrix dataframe/SummarizedExperiment in the format (samples,
+features).
 Additional column names are "Batch", "Cov_X" (were X may be any number),
 "Label", "Sample" and "Reference".}
 

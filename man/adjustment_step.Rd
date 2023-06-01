@@ -20,7 +20,8 @@ Additional column names are \"Batch\", \"Cov_X\" (were X may be any number),
 4              par.prior = FALSE, mean.only = TRUE
 Will be ignored, if method=="limma".}
 
-\item{method}{Adjustment method to use. Should either be \"ComBat\" or \"limma\".}
+\item{method}{Adjustment method to use. Should either be \"ComBat\" or
+\"limma\".}
 }
 \value{
 A matrix/dataframe mirroring the shape of the input. The data will
