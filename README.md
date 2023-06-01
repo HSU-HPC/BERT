@@ -28,6 +28,12 @@ Alternatively, download and unzip this GitHub repository. Finally, set the worki
 setwd("/home/my_user/Downloads/BERT-main/BERT-main")
 devtools::install()
 ```
+BERT has also been submitted to Bioconductor. Once it has been accepted, this page will be updated and BERT can then be installed via
+```R
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("limma")
+```
 ### Additional Features
 In order to use the MPI backend, users should install the packages `Rmpi` and `doMPI` on their system. Note, that this requires a working MPI installation on your system.
 ```R
