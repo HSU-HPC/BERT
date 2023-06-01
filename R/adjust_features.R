@@ -10,8 +10,8 @@
 #' @return A logical with TRUE for adjustable features and FALSE for features
 #' with too many missing values.
 get_adjustable_features <- function(data_batch) {
-    # should have at least 2 samples -> otherwise, we don't have enough samples at this
-    # batch/covariate level
+    # should have at least 2 samples -> otherwise, we don't have enough samples
+    # at this batch/covariate level
     if(dim(data_batch)[1]<=1){
         logging::logerror("Not enough samples at batch/covariate level.")
         stop()
@@ -59,7 +59,8 @@ get_adjustable_features_with_mod <- function(data_batch, mod_batch) {
             cor <- apply(cor, 2, function(x) Reduce("&", x))
         }
         # apply normal function
-        available_features <- available_features & get_adjustable_features(data_batch[cor,])
+        available_features <- available_features & get_adjustable_features(
+            data_batch[cor,])
     }
     
     return(available_features)
@@ -122,7 +123,8 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
     # if there is only one adjustable protein/gene, this is not enough for
     # ComBat. BERT will return both batches unadjusted!
     if (sum(total_adjustable) == 1) {
-        logging::logerror("Singular overlap between batches. Returning fully unadjusted data.")
+        logging::logerror(paste("Singular overlap between batches.",
+                                "Returning fully unadjusted data."))
         return(total_data)
     }
     
@@ -140,9 +142,11 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
     # References
     reference_list <- total_adjustable_data[["Reference"]]
     
-    # drop columns that we want to ignore. That is, all allowed columns that don't
-    # contain numeric values
-    total_adjustable_data <- total_adjustable_data[,!names(total_adjustable_data) %in% c("Batch", "Sample", "Label", "Reference")]
+    # drop columns that we want to ignore. That is, all allowed columns that
+    # don't contain numeric values
+    total_adjustable_data <- total_adjustable_data[
+        ,!names(total_adjustable_data) %in% c(
+            "Batch", "Sample", "Label", "Reference")]
     
     # set combat mode
     if(combatmode ==1){
@@ -167,28 +171,45 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
     if(dim(mod)[2]==0){
         # if we use ComBat adjustment
         if(method=="ComBat"){
-            total_data[, names(total_adjustable_data)] <- suppressMessages(t(sva::ComBat(dat = t(total_adjustable_data), batch = batch_list, par.prior = parprior, mean.only = meanonly)))
+            total_data[, names(total_adjustable_data)] <- suppressMessages(
+                t(sva::ComBat(dat = t(total_adjustable_data),
+                              batch = batch_list, par.prior = parprior,
+                              mean.only = meanonly)))
         }else if(method=="limma"){
             # if we use limma
-            total_data[, names(total_adjustable_data)] <- suppressMessages(t(limma::removeBatchEffect(x = t(total_adjustable_data), batch = batch_list)))
+            total_data[, names(total_adjustable_data)] <- t(
+                limma::removeBatchEffect(x = t(total_adjustable_data),
+                                         batch = batch_list))
         }else if (method=="None"){
             total_data[, names(total_adjustable_data)] <- total_adjustable_data
         }else if (method=="ref"){
-            total_data[, names(total_adjustable_data)] <- suppressMessages(t(removeBatchEffectRefs(x = t(total_adjustable_data), batch = batch_list, references=reference_list)))
+            total_data[, names(total_adjustable_data)] <- t(
+                removeBatchEffectRefs(x = t(total_adjustable_data),
+                                      batch = batch_list,
+                                      references=reference_list))
         }else{
             stop()
         }
     }else{
         if(method=="ComBat"){
             total_data[, names(total_adjustable_data)] <-
-                suppressMessages(t(sva::ComBat(dat = t(total_adjustable_data), batch = batch_list, mod=total_mod, par.prior = parprior, mean.only = meanonly)))
+                suppressMessages(t(sva::ComBat(dat = t(total_adjustable_data),
+                                               batch = batch_list,
+                                               mod=total_mod,
+                                               par.prior = parprior,
+                                               mean.only = meanonly)))
         }else if(method=="limma"){
-            total_data[, names(total_adjustable_data)] <- suppressMessages(t(limma::removeBatchEffect(x = t(total_adjustable_data), batch = batch_list, design=total_mod)))
+            total_data[, names(total_adjustable_data)] <- t(
+                limma::removeBatchEffect(x = t(total_adjustable_data),
+                                         batch = batch_list, design=total_mod))
         }else if (method=="None"){
             total_data[, names(total_adjustable_data)] <- total_adjustable_data
         }else if (method=="ref"){
             logging::logwarn("Reference adjustment ingores covariate levels.")
-            total_data[, names(total_adjustable_data)] <- suppressMessages(t(removeBatchEffectRefs(x = t(total_adjustable_data), batch = batch_list, references=reference_list)))
+            total_data[, names(total_adjustable_data)] <- t(
+                removeBatchEffectRefs(x = t(total_adjustable_data),
+                                      batch = batch_list,
+                                      references=reference_list))
         }else{
             stop()
         }

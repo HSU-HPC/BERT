@@ -11,7 +11,8 @@ ordinal_encode <- function(column){
 
 #' Verify that the Reference column of the data contains only zeros and ones
 #' (if it is present at all)
-#' @param batch the dataframe for this batch (samples in rows, samples in columns)
+#' @param batch the dataframe for this batch (samples in rows,
+#' samples in columns)
 #' @return either TRUE (everything correct) or FALSE (something is not correct)
 verify_references <- function(batch){
     if ("Reference" %in% names(batch)){
@@ -57,13 +58,17 @@ format_DF <- function(data){
     
     if(typeof(data)=="S4"){
         # Summarized Experiment
-        logging::loginfo("Recognized input as S4 class - assuming SummarizedExperiment")
+        logging::loginfo(paste("Recognized input as S4 class ",
+                               "- assuming SummarizedExperiment"))
         if(length(SummarizedExperiment::assays(data))!=1){
-            logging::logerror("BERT only supports batch effect correction for SummarizedExperiments with a single assay.")
+            logging::logerror(paste("BERT only supports batch effect",
+                                    "correction for SummarizedExperiments",
+                                    "with a single assay."))
             stop()
         }
         logging::loginfo("Typecasting input to dataframe.")
-        # obtain raw data from assay with observations in rows and features in columns
+        # obtain raw data from assay with observations in rows and features
+        # in columns
         raw_data <- data.frame(t(SummarizedExperiment::assay(data)))
         # obtain batch/label/sample/reference column
         raw_data["Batch"] <- SummarizedExperiment::colData(data)$Batch
@@ -74,10 +79,13 @@ format_DF <- function(data){
             raw_data["Label"] <- SummarizedExperiment::colData(data)$Label
         }
         if("Reference" %in% names(SummarizedExperiment::colData(data))){
-            raw_data["Reference"] <- SummarizedExperiment::colData(data)$Reference
+            raw_data["Reference"] <- SummarizedExperiment::colData(
+                data)$Reference
         }
         # potential covariables
-        cov_names <- names(SummarizedExperiment::colData(data))[grepl( "Cov" , names( SummarizedExperiment::colData(data)  ) )]
+        cov_names <- names(
+            SummarizedExperiment::colData(data))[grepl(
+                "Cov" ,names( SummarizedExperiment::colData(data)  ) )]
         if(length(cov_names)>0){
             for(n in cov_names){
                 raw_data[n] <- SummarizedExperiment::colData(data)[n][,1]
@@ -109,7 +117,10 @@ format_DF <- function(data){
     
     if (length(all_names>0)){
         logging::logwarn(paste("Identified", length(all_names),
-                               "categorical variables among batch, label and all covariates. Note that BERT requires integer values there. Will apply ordinal encoding."))
+                               "categorical variables among batch, label",
+                               "and all covariates. Note that BERT",
+                               "requires integer values there.",
+                               "Will apply ordinal encoding."))
         
         for(n in all_names){
             data[, n] <- ordinal_encode(data[[n]])
@@ -133,10 +144,14 @@ format_DF <- function(data){
     mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
     
     if(dim(mod)[2]!=0){
-        logging::loginfo("BERT requires at least 2 numeric values per batch/covariate level. This may reduce the number of adjustable features considerably, depending on the quantification technique.")
+        logging::loginfo(paste("BERT requires at least 2 numeric values per",
+                               "batch/covariate level. This may reduce the",
+                               "number of adjustable features considerably,",
+                               "depending on the quantification technique."))
     }
     
-    # iterate over batches and remove numeric values, if a feature (e.g. protein)
+    # iterate over batches and remove numeric values, if a feature
+    # (e.g. protein)
     # does not contain at least 2 numeric values
     for(b in unique_batches){
         # data from batch b
@@ -147,9 +162,12 @@ format_DF <- function(data){
         if(dim(mod)[2]==0){
             adjustable_batch <- get_adjustable_features(data_batch)
         }else{
-            adjustable_batch <- get_adjustable_features_with_mod(data_batch, data.frame(mod_batch))
+            adjustable_batch <- get_adjustable_features_with_mod(data_batch,
+                                                                 data.frame(
+                                                                     mod_batch))
         }
-        # set features from this batch to missing, where adjustable_batch is FALSE
+        # set features from this batch to missing, where adjustable_batch
+        # is FALSE
         data[data["Batch"] == b, !adjustable_batch] <- NA
         # require at least two references per batch
         if(!verify_references(data_batch)){
@@ -160,7 +178,9 @@ format_DF <- function(data){
     # count missing values
     final_mvs <- sum(is.na(data))
     
-    logging::loginfo(paste("Introduced ", final_mvs-inital_mvs, " missing values due to singular proteins at batch/covariate level."))
+    logging::loginfo(paste("Introduced", final_mvs-inital_mvs,
+                           "missing values due to singular proteins",
+                           "at batch/covariate level."))
     
     logging::loginfo("Done")
     
