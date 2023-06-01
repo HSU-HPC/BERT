@@ -53,7 +53,8 @@ chunk_data <- function(data, n, backend="default"){
 #'are "default" and "file". The latter will use temp files for communicating
 #'data chunks between the processes.
 #'@return dataframe with the adjusted matrix
-parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="default"){
+parallel_bert <- function(chunks, method="ComBat", combatmode=1,
+                          backend="default"){
     `%dopar%` <- foreach::`%dopar%`
     chunk <- NULL
     # parallel adjustment as far as possible for this chunk
