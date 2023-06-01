@@ -18,7 +18,7 @@ BERT(
 )
 }
 \arguments{
-\item{data}{Matrix or dataframe in the format (samples, features).
+\item{data}{Matrix dataframe/SummarizedExperiment in the format (samples, features).
 Additional column names are "Batch", "Cov_X" (were X may be any number),
 "Label", "Sample" and "Reference".}
 
@@ -34,31 +34,32 @@ default is 1.}
 Will be ignored, if method!="ComBat".}
 
 \item{method}{Adjustment method to use. Should either be "ComBat", "limma"
-or "ref". Also allows "None" for testing purposes, which will perform no BE adjustment}
+or "ref". Also allows "None" for testing purposes, which will perform no BE
+adjustment}
 
-\item{qualitycontrol}{Boolean indicating, whether ASWs should be computed before
-and after batch effect adjustment. If TRUE, will compute ASW with respect to
-the "Batch" and "Label" column (if existent).}
+\item{qualitycontrol}{Boolean indicating, whether ASWs should be computed
+before and after batch effect adjustment. If TRUE, will compute ASW with
+respect to the "Batch" and "Label" column (if existent).}
 
-\item{verify}{Whether the input matrix/dataframe needs to be verified befire adjustment
-(faster if FALSE)}
+\item{verify}{Whether the input matrix/dataframe needs to be verified before
+adjustment (faster if FALSE)}
 
 \item{mpi}{Whether to use MPI for parallelization.}
 
-\item{stopParBatches}{The minimum number of batches required at a hierarchy level
-to proceed with parallelized adjustment. If the number of batches
+\item{stopParBatches}{The minimum number of batches required at a hierarchy
+level to proceed with parallelized adjustment. If the number of batches
 is smaller, adjustment will be performed sequentially to avoid overheads.}
 
 \item{corereduction}{Reducing the number of workers by at least this number}
 
-\item{backend}{The backend to choose for communicating the data, Valid choices
-are "default" and "file". The latter will use temp files for communicating
-data chunks between the processes.
-after adjusting all sub-trees as far as possible with the previous number of cores.}
+\item{backend}{The backend to choose for communicating the data.
+Valid choices are "default" and "file". The latter will use temp files for
+communicating data chunks between the processes. after adjusting all
+sub-trees as far as possible with the previous number of cores.}
 }
 \value{
-A matrix/dataframe mirroring the shape of the input. The data will
-be batch-effect adjusted by BERT.
+A matrix/dataframe/SummarizedExperiment mirroring the shape of the
+input. The data will be batch-effect adjusted by BERT.
 }
 \description{
 This function uses the hierarchical BERT algorithm to adjust data with
