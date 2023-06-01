@@ -47,8 +47,8 @@ chunk_data <- function(data, n, backend="default"){
 #'sub-matrices are stored
 #'@param method the BE-correction method to use. Possible choices are ComBat
 #'and limma
-#'@param combatmode The mode to use for combat (ignored if limma). Encoded options
-#'are the same as for HarmonizR
+#'@param combatmode The mode to use for combat (ignored if limma).
+#'Encoded options 'are the same as for HarmonizR
 #'@param backend The backend to choose for communicating the data, Valid choices
 #'are "default" and "file". The latter will use temp files for communicating
 #'data chunks between the processes.
@@ -57,7 +57,9 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
     `%dopar%` <- foreach::`%dopar%`
     chunk <- NULL
     # parallel adjustment as far as possible for this chunk
-    adjusted_data <- foreach::foreach(chunk=iterators::iter(chunks), .combine = rbind, .export = "adjustment_step") %dopar% {
+    adjusted_data <- foreach::foreach(chunk=iterators::iter(chunks)
+                                      , .combine = rbind,
+                                      .export = "adjustment_step") %dopar% {
         if(backend=="file"){
             is_rank_1 <- (chunk==chunks[1])
             # read dataframe containing the adjusted data
@@ -75,7 +77,8 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
         data <- data [ , !grepl( "Cov" , names( data  ) ) ]
         # don't allow covariables AND references
         if((dim(mod)[2]) & ("Reference" %in% names(data))){
-            logging::logerror("Covariable and reference columns should not exist simultanously.")
+            logging::logerror(paste("Covariable and reference columns should",
+                                    "not exist simultanously."))
             stop()
         }
         
@@ -85,7 +88,9 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
         hierarchy_counter <- 1
         while(num_batches>1){
             if(is_rank_1){
-                logging::loginfo(paste("Worker one is processing hierarchy level", hierarchy_counter, "with", num_batches))
+                logging::loginfo(paste(
+                    "Worker one is processing hierarchy level",
+                    hierarchy_counter, "with", num_batches))
             }
             data <- adjustment_step(data, mod, combatmode, method)
             
@@ -121,7 +126,8 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #' for adjustment. Columns labelled "Label" and "Sample" will be ignored,
 #' all other columns are assumed to contain data.
 #'
-#' @param data Matrix dataframe/SummarizedExperiment in the format (samples, features). 
+#' @param data Matrix dataframe/SummarizedExperiment in the format (samples,
+#' features). 
 #' Additional column names are "Batch", "Cov_X" (were X may be any number),
 #' "Label", "Sample" and "Reference".
 #' @param cores The number of cores to use for parallel adjustment. Increasing
@@ -326,8 +332,8 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat",
     
     
     # get execution time in seconds
-    a1 = as.POSIXct(total_end,origin = "1970-01-01")
-    e1 = as.POSIXct(total_start,origin = "1970-01-01")
+    a1 <- as.POSIXct(total_end,origin = "1970-01-01")
+    e1 <- as.POSIXct(total_start,origin = "1970-01-01")
     execution_time <- as.numeric(a1) - as.numeric(e1)
     # get adjustment time in seconds
     a2 <- as.POSIXct(adjustment_end,origin = "1970-01-01")
