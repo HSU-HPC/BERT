@@ -154,7 +154,7 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1, backend="defaul
 #' @examples
 #' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
 #' # two genotypes
-#' data = generateDataset(1000,5,10,2)
+#' data = generateDataset(1000,5,10,0.1, 2)
 #' corrected = BERT(data)
 #' @export
 BERT <- function(data, cores = 1, combatmode = 1, method="ComBat", qualitycontrol=TRUE, verify=TRUE, mpi=FALSE, stopParBatches = 4, corereduction=2, backend="default"){

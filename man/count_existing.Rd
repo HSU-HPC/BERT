@@ -21,6 +21,6 @@ Count the number of numeric features in this dataset. Columns labelled
 \examples{
 # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
 # two genotypes
-data = generateDataset(1000,5,10,2)
+data = generateDataset(1000,5,10, 0.1, 2)
 count_existing(data)
 }

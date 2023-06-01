@@ -45,5 +45,5 @@ The data will be already in the correct format for BERT.
 \examples{
 # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
 # two genotypes
-data = generateDataset(1000,5,10,2)
+data = generateDataset(1000,5,10, 0.1, 2)
 }

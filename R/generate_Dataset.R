@@ -30,7 +30,7 @@ strip_Covariable <- function(dataset){
 #' @examples
 #' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
 #' # two genotypes
-#' data = generateDataset(1000,5,10,2)
+#' data = generateDataset(1000,5,10, 0.1, 2)
 #' @export
 generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes, housekeeping = NULL, deterministic = FALSE){
   # genewise offset
@@ -124,7 +124,7 @@ generateDataset <- function(features, batches, samplesperbatch, mvstmt, classes,
 #' @examples
 #' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
 #' # two genotypes. The class ratio will either be 7:3 or 3:7 per batch.
-#' data = generateDataset(1000,5,10,0.3)
+#' data = generateDataCovariables(1000,5,10, 0.1, 0.3)
 #' @export
 generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, imbalcov, housekeeping = NULL){
   # genewise offset
@@ -217,7 +217,7 @@ generateDataCovariables <- function(features, batches, samplesperbatch, mvstmt, 
 #' @examples
 #' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
 #' # two genotypes
-#' data = generateDataset(1000,5,10,2)
+#' data = generateDataset(1000,5,10,0.1, 2)
 #' asw = compute_asw(data)
 #' asw
 #' @export
@@ -262,7 +262,7 @@ compute_asw <- function(dataset){
 #' @examples
 #' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
 #' # two genotypes
-#' data = generateDataset(1000,5,10,2)
+#' data = generateDataset(1000,5,10, 0.1, 2)
 #' count_existing(data)
 #' @export
 count_existing <- function(dataset){
