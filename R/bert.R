@@ -53,14 +53,18 @@ chunk_data <- function(data, n, backend="default"){
 #'are "default" and "file". The latter will use temp files for communicating
 #'data chunks between the processes.
 #'@return dataframe with the adjusted matrix
-parallel_bert <- function(chunks, method="ComBat", combatmode=1,
-                          backend="default"){
+parallel_bert <- function(
+        chunks, 
+        method="ComBat", 
+        combatmode=1, 
+        backend="default"){
     `%dopar%` <- foreach::`%dopar%`
     chunk <- NULL
     # parallel adjustment as far as possible for this chunk
-    adjusted_data <- foreach::foreach(chunk=iterators::iter(chunks)
-                                      , .combine = rbind,
-                                      .export = "adjustment_step") %dopar% {
+    adjusted_data <- foreach::foreach(
+        chunk=iterators::iter(chunks), 
+        .combine = rbind,
+        .export = "adjustment_step") %dopar% {
         if(backend=="file"){
             is_rank_1 <- (chunk==chunks[1])
             # read dataframe containing the adjusted data
@@ -165,9 +169,17 @@ parallel_bert <- function(chunks, method="ComBat", combatmode=1,
 #' data = generateDataset(1000,5,10,0.1, 2)
 #' corrected = BERT(data)
 #' @export
-BERT <- function(data, cores = 1, combatmode = 1, method="ComBat",
-                 qualitycontrol=TRUE, verify=TRUE, mpi=FALSE,
-                 stopParBatches = 4, corereduction=2, backend="default"){
+BERT <- function(
+        data, 
+        cores = 1, 
+        combatmode = 1, 
+        method="ComBat",
+        qualitycontrol=TRUE, 
+        verify=TRUE, 
+        mpi=FALSE,
+        stopParBatches = 4, 
+        corereduction=2, 
+        backend="default"){
     # store original cores
     original_cores <- cores
     
@@ -205,13 +217,15 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat",
         if (.Platform$OS.type == "windows") {
             # set up cluster
             cl <- parallel::makeCluster(cores)
-            logging::loginfo(paste("Identified OS as Windows. Using Parallel",
-                                   "Socket Cluster (PSOCK)."))
+            logging::loginfo(paste(
+                "Identified OS as Windows. Using Parallel",
+                "Socket Cluster (PSOCK)."))
         } else{
             # set up cluster with forking.
             cl <- parallel::makeForkCluster(cores)
-            logging::loginfo(paste("Identified OS as UNIX (aka not windows).", 
-                                   "Using forking."))
+            logging::loginfo(paste(
+                "Identified OS as UNIX (aka not windows).", 
+                "Using forking."))
         }
         # register parallel backend
         doParallel::registerDoParallel(cl)
@@ -235,12 +249,16 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat",
     
     sub_tree_counter <- 1
     while((num_batches>stopParBatches)&&(cores>1)){
-        logging::loginfo(paste("Processing subtree level",
-                               sub_tree_counter,"with",
-                               num_batches,"batches using",cores,"cores."))
+        logging::loginfo(paste(
+            "Processing subtree level",
+            sub_tree_counter,"with",
+            num_batches,"batches using",cores,"cores."))
         chunks <- chunk_data(data, cores, backend = backend)
-        data <- parallel_bert(chunks, method=method, combatmode=combatmode,
-                              backend = backend)
+        data <- parallel_bert(
+            chunks, 
+            method=method, 
+            combatmode=combatmode,
+            backend = backend)
         
         # the number of batches that remain in the adjusted data
         num_batches <- dim(unique(data["Batch"]))[1]
@@ -251,22 +269,25 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat",
         sub_tree_counter <- sub_tree_counter+1
     }
     
-    logging::loginfo(paste("Adjusting the last", num_batches,
-                           "batches sequentially"))
+    logging::loginfo(paste(
+        "Adjusting the last", num_batches,
+        "batches sequentially"))
     # last few batches are adjusted sequentially to avoid overheads
     mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
     data <- data [ , !grepl( "Cov" , names( data  ) ) ]
     # don't allow covariables AND references
     if((dim(mod)[2]) & ("Reference" %in% names(data))){
-        logging::logerror(paste("Covariable and reference columns should",
-                                "not exist simultanously."))
+        logging::logerror(paste(
+            "Covariable and reference columns should",
+            "not exist simultanously."))
         stop()
     }
     hierarchy_level <- 1
     while (num_batches > 1) {
-        logging::loginfo(paste("Adjusting sequential tree level",
-                               hierarchy_level, "with", num_batches,
-                               "batches"))
+        logging::loginfo(paste(
+            "Adjusting sequential tree level",
+            hierarchy_level, "with", num_batches,
+            "batches"))
         data <- adjustment_step(data, mod, combatmode, method)
         # re-count the batches 
         num_batches <- dim(unique(data["Batch"]))[1]
@@ -300,22 +321,25 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat",
     }
     # compute ASWs, if required
     if(qualitycontrol){
-        logging::loginfo(paste("Acquiring quality metrics after batch effect",
-                               "correction."))
+        logging::loginfo(paste(
+            "Acquiring quality metrics after batch effect",
+            "correction."))
         asws_after <- compute_asw(data)
         
         # batch information
         if(!is.na(asws_prior$Batch)){
-            logging::loginfo(paste("ASW Batch was", asws_prior$Batch,
-                                   "prior to batch effect",
-                                   "correction and is now",
-                                   asws_after$Batch,"."))
+            logging::loginfo(paste(
+                "ASW Batch was", asws_prior$Batch,
+                "prior to batch effect",
+                "correction and is now",
+                asws_after$Batch,"."))
         }
         # label information
         if(!is.na(asws_prior$Label)){
-            logging::loginfo(paste("ASW Label was", asws_prior$Label,
-                                   "prior to batch effect correction",
-                                   "and is now", asws_after$Label,"."))
+            logging::loginfo(paste(
+                "ASW Label was", asws_prior$Label,
+                "prior to batch effect correction",
+                "and is now", asws_after$Label,"."))
         }
     }
     
@@ -345,9 +369,10 @@ BERT <- function(data, cores = 1, combatmode = 1, method="ComBat",
         100 * as.numeric(adjustment_time) / as.numeric(execution_time),
         digits = 2)
     
-    logging::loginfo(paste("Total function execution time is ",
-                           execution_time," s and adjustment time is ",
-                           adjustment_time,"s (",frac,")"))
+    logging::loginfo(paste(
+        "Total function execution time is ",
+        execution_time," s and adjustment time is ",
+        adjustment_time,"s (",frac,")"))
     
     return(data)
     
