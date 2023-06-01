@@ -202,6 +202,29 @@ dataset_raw = SummarizedExperiment::SummarizedExperiment(assays=list(expr=expr_v
 dataset_adjusted = BERT(dataset_raw)
 ```
 
+```
+2023-06-01 12:49:54.803452 INFO::Formatting Data.
+2023-06-01 12:49:54.816053 INFO::Replacing NaNs with NAs.
+2023-06-01 12:49:54.826527 INFO::Removing potential empty rows and columns
+2023-06-01 12:49:55.027343 INFO::Found  27000  missing values.
+2023-06-01 12:49:55.029614 INFO::BERT requires at least 2 numeric values per batch/covariate level. This may reduce the number of adjustable features considerably, depending on the quantification technique.
+2023-06-01 12:49:55.338783 INFO::Introduced  0  missing values due to singular proteins at batch/covariate level.
+2023-06-01 12:49:55.340449 INFO::Done
+2023-06-01 12:49:55.341769 INFO::Acquiring quality metrics before batch effect correction.
+2023-06-01 12:49:55.513225 INFO::Starting hierarchical adjustment
+2023-06-01 12:49:55.515381 INFO::Found  20  batches.
+2023-06-01 12:49:55.51778 INFO::Adjusting the last 20 batches sequentially
+2023-06-01 12:49:55.52013 INFO::Adjusting sequential tree level 1 with 20 batches
+2023-06-01 12:49:58.438396 INFO::Adjusting sequential tree level 2 with 10 batches
+2023-06-01 12:49:59.006294 INFO::Adjusting sequential tree level 3 with 5 batches
+2023-06-01 12:49:59.290571 INFO::Adjusting sequential tree level 4 with 3 batches
+2023-06-01 12:49:59.475011 INFO::Adjusting sequential tree level 5 with 2 batches
+2023-06-01 12:49:59.660278 INFO::Done
+2023-06-01 12:49:59.662174 INFO::Acquiring quality metrics after batch effect correction.
+2023-06-01 12:49:59.826449 INFO::ASW Batch was 0.507973184713031 prior to batch effect correction and is now -0.133957677497005 .
+2023-06-01 12:49:59.828034 INFO::ASW Label was 0.326591041133387 prior to batch effect correction and is now 0.795799704493019 .
+2023-06-01 12:49:59.829399 INFO::Total function execution time is  5.29782199859619  s and adjustment time is  4.14515495300293 s ( 78.24 )
+```
 #### BERT with Covariables
 
 ```R
