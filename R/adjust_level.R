@@ -12,7 +12,8 @@
 #' 3              par.prior = FALSE, mean.only = FALSE
 #' 4              par.prior = FALSE, mean.only = TRUE
 #' Will be ignored, if method=="limma".
-#' @param method Adjustment method to use. Should either be \"ComBat\" or \"limma\".
+#' @param method Adjustment method to use. Should either be \"ComBat\" or 
+#' \"limma\".
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
 adjustment_step_parallel <- function(data, mod, combatmode, method) {
@@ -27,7 +28,10 @@ adjustment_step_parallel <- function(data, mod, combatmode, method) {
     `%dopar%` <- foreach::`%dopar%`
     i <- NULL
     # adjust the data at this hierarchy level
-    adjusted_data <-foreach::foreach(i = iterators::iter(indices),.combine = rbind, .export = c("get_adjustable_features", "adjust_node")) %dopar% {
+    adjusted_data <-foreach::foreach(
+        i = iterators::iter(indices),
+        .combine = rbind, 
+        .export = c("get_adjustable_features", "adjust_node")) %dopar% {
         # matrix / dataframe containing the adjusted data
         tempMatrix <- NULL
         if (i == length(unique_batches)) {
@@ -35,12 +39,19 @@ adjustment_step_parallel <- function(data, mod, combatmode, method) {
             tempMatrix <- data[data$Batch == unique_batches[i],]
         } else{
             # can adjust a pair of batches (this and the last one)
-            tempMatrix <- adjust_node(data, unique_batches[i], unique_batches[i + 1], mod, combatmode, method)
+            tempMatrix <- adjust_node(
+                data, 
+                unique_batches[i], 
+                unique_batches[i + 1], 
+                mod, 
+                combatmode, 
+                method)
         }
         # override batch description for the respectively adjusted batches
         tempMatrix["Batch"] <- unique_batches[i]
         
-        # the adjusted data OR the single, unadjusted batch, if batch number is odd
+        # the adjusted data OR the single, unadjusted batch, if batch number is
+        # odd
         tempMatrix
     }
     # adjusted data from this hierarchy level
@@ -63,7 +74,8 @@ adjustment_step_parallel <- function(data, mod, combatmode, method) {
 #' 3              par.prior = FALSE, mean.only = FALSE
 #' 4              par.prior = FALSE, mean.only = TRUE
 #' Will be ignored, if method=="limma".
-#' @param method Adjustment method to use. Should either be \"ComBat\" or \"limma\".
+#' @param method Adjustment method to use. Should either be \"ComBat\" or
+#' \"limma\".
 #' @return A matrix/dataframe mirroring the shape of the input. The data will
 #' be batch-effect adjusted by BERT.
 adjustment_step <- function(data, mod, combatmode, method) {
@@ -78,7 +90,8 @@ adjustment_step <- function(data, mod, combatmode, method) {
     `%do%` <- foreach::`%do%`
     i <- NULL
     # adjust the data at this hierarchy level
-    adjusted_data <- foreach::foreach(i = iterators::iter(indices), .combine = rbind) %do% {
+    adjusted_data <- foreach::foreach(
+        i = iterators::iter(indices), .combine = rbind) %do% {
         # matrix / dataframe containing the adjusted data
         tempMatrix <- NULL
         if (i == length(unique_batches)) {
@@ -86,11 +99,18 @@ adjustment_step <- function(data, mod, combatmode, method) {
             tempMatrix <- data[data$Batch == unique_batches[i],]
         } else{
             # can adjust a pair of batches (this and the last one)
-            tempMatrix <- adjust_node(data, unique_batches[i], unique_batches[i + 1], mod, combatmode, method)
+            tempMatrix <- adjust_node(
+                data, 
+                unique_batches[i], 
+                unique_batches[i + 1], 
+                mod, 
+                combatmode, 
+                method)
         }
         # override batch description for the respectively adjusted batches
         tempMatrix["Batch"] <- unique_batches[i]
-        # the adjusted data OR the single, unadjusted batch, if batch number is odd
+        # the adjusted data OR the single, unadjusted batch, if batch number is
+        # odd
         tempMatrix
     }
     
