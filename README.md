@@ -55,6 +55,18 @@ As input, BERT requires a dataframe[^2] with samples in rows and features in col
  - `Cov_1`, `Cov_2`, ..., `Cov_x`: One or multiple columns with integers, indicating one or several covariate levels. `NA` is not allowed. If this(these) column(s) is present, BERT will pass them as covariates to the the underlying batch effect correction method. As an example, this functionality can be used to preserve differences between healthy/tumorous samples, if some of the batches exhibit strongly variable class distributions. Note that BERT requires at least two numeric values per batch and unique covariate level to adjust a feature. Features that don't satisfy this condition in a specific batch are set to `NA` for that batch. 
 - `Reference` A column with integers from $\mathbb{N}_0$ that indicate, whether a sample should be used for "learning" the transformation for batch effect correction or whether the sample should be co-adjusted using the learned transformation from the other samples. `NA` is not allowed. This feature can be used, if some batches contain unique classes or samples with unknown classes which would prohibit the usage of covariate columns. If the column contains a `0` for a sample, this sample will be co-adjusted. Otherwise, the sample should contain the respective class (encoded as integer). Note that BERT requires at least two references of common class per adjustment step and that the `Reference` column is mutually exclusive with covariate columns.
 
+Note that BERT only allows `SummarizedExperiment`s with only one assay. All metadata information, including the mandatory batch information, must be contained in the metadata, which BERT accesses using `colData`. For instance, a valid `SummarizedExperiment` might be defined as
+```R
+nrows <- 200
+ncols <- 8
+expr_values <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
+# colData also takes further metadata information, such as Label, Sample,
+# Reference or Covariables
+colData <- data.frame(Batch=c(1,1,1,1,2,2,2,2), Reference=c(1,1,0,0,1,1,0,0))
+dataset_raw = SummarizedExperiment::SummarizedExperiment(assays=list(expr=expr_values), colData=colData)
+```
+
+
 ## Basic Usage
 BERT can be invoked by importing the `BERT` library and calling the `BERT` function. The batch effect corrected data is returned as a dataframe that mirrors the input dataframe[^3].
 ```R
