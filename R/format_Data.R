@@ -1,14 +1,3 @@
-#' Ordinal encoding of a vector.
-#' 
-#'This function is usually called by BERT during formatting of the input.
-#'The idea is, that Label, Batch and Covariables should only be integers
-#' @param column The categorical vector
-#' @return The encoded vector
-ordinal_encode <- function(column){
-    temp <- as.integer(factor(column, levels=unique(column)))
-    return(temp)
-}
-
 #' Verify that the Reference column of the data contains only zeros and ones
 #' (if it is present at all)
 #' @param batch the dataframe for this batch (samples in rows,
@@ -37,7 +26,7 @@ verify_references <- function(batch){
 #' @param data The data as dataframe
 #' @return The data with the replaced MVs
 replace_missing <- function(data){
-    data[vapply(data, is.nan, logical(dim(data)[1]))] <- NA
+    data[vapply(data, is.nan, logical(nrow(data)))] <- NA
     data[is.null(data)] <- NA
     return(data)
 }
@@ -50,13 +39,23 @@ replace_missing <- function(data){
 #'unadjustable for lack of data.
 #'
 #' @param data Matrix or dataframe in the format (samples, features). 
+#' @param labelname A string containing the name of the column to use as class
+#' labels. The default is "Label".
+#' @param batchname A string containing the name of the column to use as batch
+#' labels. The default is "Batch".
+#' @param referencename A string containing the name of the column to use as ref.
+#' labels. The default is "Reference".
+#' @param covariatename A vector containing the names of columns with
+#' categorical covariables. The default is NULL, for which all columns with
+#' the pattern "Cov" will be selected.
 #' Additional column names are "Batch", "Cov_X" (were X may be any number),
 #' "Label" and "Sample".
 #' @return The formatted matrix.
-format_DF <- function(data){
+format_DF <- function(data, labelname="Label",batchname="Batch",
+                      referencename="Reference", covariatename=NULL){
     logging::loginfo("Formatting Data.")
     
-    if(typeof(data)=="S4"){
+    if(methods::is(data, "SummarizedExperiment")){
         # Summarized Experiment
         logging::loginfo(paste(
             "Recognized input as S4 class ",
@@ -102,33 +101,45 @@ format_DF <- function(data){
     logging::loginfo("Replacing NaNs with NAs.")
     data <- replace_missing(data)
     
+    # rename according to user-specified column names
+    if(batchname %in% names(data)){
+        names(data)[names(data) == batchname] <- "Batch"
+    }
+    if(labelname %in% names(data)){
+        names(data)[names(data) == labelname] <- "Label"
+    }
+    if(referencename %in% names(data)){
+        names(data)[names(data) == referencename] <- "Reference"
+    }
+    
+    if(!is.null(covariatename)){
+        if(!all(vapply(covariatename, function(x){x %in% names(data)},
+                       logical(1)))){
+            logging::logerror(paste("Not all of the user specified column",
+                                    "names could be found in the input data."))
+        }
+        temp <- vapply(names(data), function (x) {x %in% covariatename},
+                       logical(1))
+        names(data)[temp] <- vapply(names(data)[temp],
+                                   function (x) {paste("Cov_", x, sep = "")},
+                                   character(1))
+    }
+    
     # get names of potential covariables
     cov_names <- names(data)[grepl( "Cov" , names( data  ) )]
-    cat_names <- names(data)[names(data) %in% c("Label", "Batch")]
-    all_names <- c(cov_names, cat_names)
     
-    if(length(all_names)==1){
-        if(!is.character(data[1, all_names])){
-            all_names <- character(0)
+    if(length(cov_names)==1){
+        if(!is.character(data[1, cov_names])){
+            cov_names <- character(0)
         }
     }else{
-        dtypes <- vapply(data[, all_names], typeof, character(1))
-        all_names <- all_names[dtypes=="character"]
+        dtypes <- vapply(data[, cov_names], typeof, character(1))
+        cov_names <- cov_names[dtypes=="character"]
     }
-    
-    if (length(all_names>0)){
-        logging::logwarn(paste(
-            "Identified", length(all_names),
-            "categorical variables among batch, label",
-            "and all covariates. Note that BERT",
-            "requires integer values there.",
-            "Will apply ordinal encoding."))
-        
-        for(n in all_names){
-            data[, n] <- ordinal_encode(data[[n]])
-        }
+    if(length(cov_names)>0){
+        logging::logerror("Covariables with non-integer values detected.")
+        stop()
     }
-    
     
     logging::loginfo("Removing potential empty rows and columns")
     `%>%` <- janitor::`%>%`
@@ -145,7 +156,7 @@ format_DF <- function(data){
     # select covariates
     mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
     
-    if(dim(mod)[2]!=0){
+    if(ncol(mod)!=0){
         logging::loginfo(paste(
             "BERT requires at least 2 numeric values per",
             "batch/covariate level. This may reduce the",
@@ -162,7 +173,7 @@ format_DF <- function(data){
         mod_batch <- mod[data["Batch"] == b,]
         # logical with the features that can be adjusted (that is, contain more
         # than 2 numeric values in this batch/covariate level)
-        if(dim(mod)[2]==0){
+        if(ncol(mod)==0){
             adjustable_batch <- get_adjustable_features(data_batch)
         }else{
             adjustable_batch <- get_adjustable_features_with_mod(

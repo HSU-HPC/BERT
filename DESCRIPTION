@@ -1,17 +1,25 @@
 Package: BERT
 Title: Hierarchical Batch-Effect Adjustment with Trees
-Version: 0.99.2
+Version: 0.99.3
 Authors@R: 
     c(person("Yannis", "Schumann", , "schumany@hsu-hh.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-2379-200X")),
            person("Simon", "Schlumbohm", , "schlumbohm@hsu-hh.de", role = c("aut"),
            comment = c(ORCID = "0000-0002-0083-5142")))
-Description: Provides efficient batch-effect adjustment of data with missing values. BERT orders all batch effect correction to a tree of pairwise computations. BERT allows parallelization over sub-trees. 
+Description: Provides efficient batch-effect adjustment of data with missing
+    values. BERT orders all batch effect correction to a tree of pairwise computations.
+    BERT allows parallelization over sub-trees. 
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-biocViews: BatchEffect
+biocViews:
+    BatchEffect,
+    Preprocessing,
+    ExperimentalDesign
+URL: https://github.com/HSU-HPC/BERT/
+BugReports: https://github.com/HSU-HPC/BERT/issues
 License: GPL-3
+Depends: R (>= 4.3.0)
 Imports: 
     cluster,
     comprehenr,
@@ -24,7 +32,10 @@ Imports:
     logging (>= 0.10-108),
     parallel,
     sva (>= 3.38.0),
-    SummarizedExperiment
+    SummarizedExperiment,
+    BiocStyle,
+    methods,
+    utils
 Suggests: 
     testthat (>= 3.0.0),
     knitr,

@@ -1,7 +1,7 @@
 #' Check, which features contain enough numeric data to be adjusted (at least
 #' 2 numeric values)
 #'
-#' This function will be called automatically be BERT n data from each batch
+#' This function will be called automatically be BERT on data from each batch
 #' independently.
 #'
 #' @param data_batch Matrix or dataframe in the format (samples, features). 
@@ -12,7 +12,7 @@
 get_adjustable_features <- function(data_batch) {
     # should have at least 2 samples -> otherwise, we don't have enough samples
     # at this batch/covariate level
-    if(dim(data_batch)[1]<=1){
+    if(nrow(data_batch)<=1){
         logging::logerror("Not enough samples at batch/covariate level.")
         stop()
     }
@@ -48,14 +48,14 @@ get_adjustable_features_with_mod <- function(data_batch, mod_batch) {
     uniques <- unique(mod_batch)
     
     # default true
-    available_features <- seq(TRUE, TRUE, length.out=dim(data_batch)[2])
+    available_features <- rep(TRUE, TRUE, length.out=ncol(data_batch))
     
-    for(u_idx in seq_len(dim(uniques)[1])){
+    for(u_idx in seq_len(nrow(uniques))){
         # the respective unique comb. of covariables
         u <- uniques[u_idx, ]
         # samples to select
         cor <- apply(mod_batch, 1, function(x, y) x==y, u)
-        if(dim(mod_batch)[2]>1){
+        if(ncol(mod_batch)>1){
             cor <- apply(cor, 2, function(x) Reduce("&", x))
         }
         # apply normal function
@@ -103,9 +103,11 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
     # select corresponding mod --> may still be empty
     mod_b_1 <- data.frame(mod[data$Batch == b1,])
     mod_b_2 <- data.frame(mod[data$Batch == b2,])
+
+
     
     # get adjustable features
-    if(dim(mod)[2]==0){
+    if(ncol(mod)==0){
         # no covariates
         av_b1 <- get_adjustable_features(data_b_1)
         av_b2 <- get_adjustable_features(data_b_2)
@@ -168,7 +170,7 @@ adjust_node <- function(data, b1, b2, mod, combatmode, method) {
     # the following if-statements use the respective adjustment method and
     # fill them into the total_data matrix
     # if the covariate-dataframe is empty
-    if(dim(mod)[2]==0){
+    if(ncol(mod)==0){
         # if we use ComBat adjustment
         if(method=="ComBat"){
             total_data[, names(total_adjustable_data)] <- suppressMessages(

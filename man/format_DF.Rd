@@ -4,10 +4,29 @@
 \alias{format_DF}
 \title{Format the data as expected by BERT.}
 \usage{
-format_DF(data)
+format_DF(
+  data,
+  labelname = "Label",
+  batchname = "Batch",
+  referencename = "Reference",
+  covariatename = NULL
+)
 }
 \arguments{
-\item{data}{Matrix or dataframe in the format (samples, features).
+\item{data}{Matrix or dataframe in the format (samples, features).}
+
+\item{labelname}{A string containing the name of the column to use as class
+labels. The default is "Label".}
+
+\item{batchname}{A string containing the name of the column to use as batch
+labels. The default is "Batch".}
+
+\item{referencename}{A string containing the name of the column to use as ref.
+labels. The default is "Reference".}
+
+\item{covariatename}{A vector containing the names of columns with
+categorical covariables. The default is NULL, for which all columns with
+the pattern "Cov" will be selected.
 Additional column names are "Batch", "Cov_X" (were X may be any number),
 "Label" and "Sample".}
 }

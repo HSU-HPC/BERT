@@ -107,6 +107,33 @@ test_that("BERT does not allow combination of covariable and reference columns",
   testthat::expect_error(BERT(y, 2, method="None"))
 })
 
+test_that("BERT allows string input to Reference and not to covariable columns", {
+    # generate dataset, 9 samples, 10 features
+    y <- matrix(rnorm(10*9),9,10)
+    y <- data.frame(y)
+    y["Batch"] <- c(1,1,1,1,2,2,2,2,2)
+    y["Cov_1"] <- c(1,1,2,2,1,1,1,2,2)
+    # numeric covariates
+    expect_error(BERT(y, method="limma"), NA)
+    # categorical covariates
+    y2 = data.frame(y)
+    y2$Cov_1 = sapply(y2$Cov_1, as.character)
+    expect_error(BERT(y2, method="limma"))
+    
+    y <- matrix(rnorm(10*9),9,10)
+    y <- data.frame(y)
+    y["Batch"] <- c(1,1,1,1,2,2,2,2,2)
+    y["Reference"] <- c(1,1,2,2,1,1,1,2,2)
+    # numeric covariates
+    y_cor1 = BERT(y, method="limma")
+    y_cor1$Reference = sapply(y_cor1$Reference, as.character)
+    # categorical covariates
+    y2 = data.frame(y)
+    y2$Reference = sapply(y2$Reference, as.character)
+    y_cor2 = BERT(y2, method="limma")
+    expect_equal(y_cor1, y_cor2)
+})
+
 test_that("BERT likes SummarizedExperiments",{
   nrows <- 200
   ncols <- 8
@@ -132,11 +159,95 @@ test_that("BERT preserves order of samples and features", {
 
 test_that("bert works for simulated data without any formatting of the input -- BERT", {
   # generate dataset, 9 samples, 10 features
-  y <- generateDataset(100,5,10,0.1,2)
+  y <- generate_dataset(100,5,10,0.1,2)
   y_adjusted <- BERT(y, method="None", verify=FALSE)
   expect_true(all.equal(y, y_adjusted[rownames(y), colnames(y)]))
 })
 
+test_that("BERT allows the user to specify custom names for batch", {
+    y <- generate_dataset(5,5,10,0.1,2)
+    y_1 = BERT(y, method="limma")
+    # rename
+    names(y)[names(y)=="Batch"] = "X"
+    y_2 = BERT(y, method="limma", batchname = "X")
+    names(y_2)[names(y_2)=="X"] = "Batch"
+    expect_true(all.equal(y_1, y_2[rownames(y_2), colnames(y_2)]))
+})
+
+test_that("BERT allows the user to specify custom names for label", {
+    y <- generate_dataset(5,5,10,0.1,2)
+    y_1 = BERT(y, method="limma")
+    # rename
+    names(y)[names(y)=="Label"] = "X"
+    y_2 = BERT(y, method="limma", labelname = "X")
+    names(y_2)[names(y_2)=="X"] = "Label"
+    expect_true(all.equal(y_1, y_2[rownames(y_2), colnames(y_2)]))
+})
+
+test_that("BERT allows the user to specify custom names for references", {
+    y <- generate_dataset(5,2,25,0.1,2)
+    y["Reference"] = y$Label
+    y_1 = BERT(y, method="limma")
+    # rename
+    names(y)[names(y)=="Reference"] = "X"
+    y_2 = BERT(y, method="limma", referencename = "X")
+    names(y_2)[names(y_2)=="X"] = "Reference"
+    expect_true(all.equal(y_1, y_2[rownames(y_2), colnames(y_2)]))
+})
+
+test_that("BERT allows the user to specify custom names for covariables", {
+    y <- generate_dataset(5,2,25,0.1,2)
+    y["Cov_1"] = y$Label
+    y_1 = BERT(y, method="limma")
+    # rename
+    names(y)[names(y)=="Cov_1"] = "X"
+    y_2 = BERT(y, method="limma", covariatename = c("X"))
+    names(y_2)[names(y_2)=="X"] = "Cov_1"
+    expect_true(all.equal(y_1, y_2[rownames(y_2), colnames(y_2)]))
+})
+
+test_that("bert validates all user input -- BERT", {
+    # generate dataset, 9 samples, 10 features
+    y <- generate_dataset(100,5,10,0.1,2)
+    # this should work
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", "B", "R", NULL), NA)
+    expect_error(BERT(y, 1, 1,"ComBat", TRUE, FALSE, FALSE, 1, 2, "file", "X",
+                      "B", "R", NULL), NA)
+    # this should crash
+    expect_error(validate_bert_input("blubb", 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, -1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 10, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, "TRUE", FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, "", FALSE, 1, 2,
+                                     "file", "None", "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, -10, 1, 2,
+                                     "file", "None", "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, FALSE, 2,
+                                     "file", "None", "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, "",
+                                     "file", "None", "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "f", "None", "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     -1, "None", "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", FALSE, "X", "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", -1, "B", "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", FALSE, "R", NULL))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", FALSE, "R", c()))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", FALSE, "R",
+                                     c("c", 1)))
+    
+})
 
 test_that("works equally with dataframes and matrices -- BERT", {
   # generate dataset, 9 samples, 10 features

@@ -3,5 +3,5 @@
 export(BERT)
 export(compute_asw)
 export(count_existing)
-export(generateDataCovariables)
-export(generateDataset)
+export(generate_data_covariables)
+export(generate_dataset)

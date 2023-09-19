@@ -1,3 +1,74 @@
+#' Validate the user input to the function generate_dataset.
+#' Raises an error if and only if the input is malformatted.
+#' 
+#' @param features Integer indicating the number of features
+#' (e.g. genes/proteins) in the dataset.
+#' @param batches Integer indicating the number of batches in the
+#'  dataset.
+#' @param samplesperbatch Integer indicating the number of of samples
+#' per batch.
+#' @param mvstmt Float (in [0,1)) indicating the fraction of missing values
+#' per batch. 
+#' @param classes Integer indicating the number of classes in the dataset.
+#' @param housekeeping If NULL, no huosekeeping features will be simulatd.
+#' Else, housepeeping indicates the fraction of of housekeeping features.
+#' @param deterministic Whether to assigns the classes deterministically,
+#' instead of random sampling
+#' @return None
+validate_input_generate_dataset <- function(features, 
+                                            batches, 
+                                            samplesperbatch, 
+                                            mvstmt, 
+                                            classes, 
+                                            housekeeping, 
+                                            deterministic) {
+    if(!is.numeric(features) || !features%%1==0 || features<=0){
+        logging::logerror(paste("Please provide positive integer arguments to",
+                                "features in function generate_dataset"))
+        stop()
+    }
+    if(!is.numeric(batches) || !batches%%1==0 || batches<=1){
+        logging::logerror(paste("Please provide integer (>=2) arguments to",
+                                "batches in function generate_dataset"))
+        stop()
+    }
+    if(!is.numeric(samplesperbatch) || !samplesperbatch%%1==0 ||
+       samplesperbatch<=1){
+        logging::logerror(paste("Please provide integer (>=2) arguments to",
+                                "samplesperbatch in function generate_dataset"))
+        stop()
+    }
+    if(!is.numeric(mvstmt) || !(0<=mvstmt && mvstmt<1)){
+        logging::logerror(paste("Parameter mvstmt in function generate_dataset",
+                                "must be in [0,1)"))
+        stop()
+    }
+    if(!is.numeric(classes) || !classes%%1==0 || classes<=0){
+        logging::logerror(paste("Please provide positive integer arguments to",
+                                "classes in function generate_dataset"))
+        stop()
+    }
+    if(!is.null(housekeeping)){
+        if(!is.numeric(housekeeping) || !(0<housekeeping && housekeeping<1)){
+            logging::logerror(paste("Parameter housekeeping in function",
+                                    "generate_dataset must be in NULL or",
+                                    "(0,1)"))
+            stop()
+        }
+        if(mvstmt + housekeeping>1){
+            logging::logerror("Sum of parameters mvstmt and housekeeping in",
+                              "generate_dataset must be <=1.")
+            stop()
+        }
+    }
+    if(!is.logical(deterministic)){
+        logging::logerror("Parameter deterministic in function",
+                          "generate_dataset must be TRUE/FALSE.")
+        stop()
+    }
+}
+
+
 #' Strip column labelled Cov_1 from dataframe.
 #'
 #' @param dataset Dataframe in the shape (samples, features) with additional
@@ -19,7 +90,7 @@ strip_Covariable <- function(dataset){
 #'  dataset.
 #' @param samplesperbatch Integer indicating the number of of samples
 #' per batch.
-#' @param mvstmt Float (in (0,1)) indicating the fraction of missing values
+#' @param mvstmt Float (in [0,1)) indicating the fraction of missing values
 #' per batch. 
 #' @param classes Integer indicating the number of classes in the dataset.
 #' @param housekeeping If NULL, no huosekeeping features will be simulatd.
@@ -28,11 +99,11 @@ strip_Covariable <- function(dataset){
 #' instead of random sampling
 #' @return A dataframe containing the simulated data.
 #' @examples
-#' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+#' # generate dataset with 1000 features, 5 batches, 10 samples per batch and
 #' # two genotypes
-#' data = generateDataset(1000,5,10, 0.1, 2)
+#' data = generate_dataset(1000,5,10, 0.1, 2)
 #' @export
-generateDataset <- function(
+generate_dataset <- function(
         features, 
         batches, 
         samplesperbatch, 
@@ -41,6 +112,11 @@ generateDataset <- function(
         housekeeping = NULL, 
         deterministic = FALSE
         ){
+    
+    # validate input
+    validate_input_generate_dataset(features, batches, samplesperbatch, mvstmt,
+                                    classes, housekeeping, deterministic)
+    
     # genewise offset
     a <- stats::rnorm(features, mean=0, sd=1)
     # condition-specific offset
@@ -135,7 +211,7 @@ generateDataset <- function(
 #'  dataset.
 #' @param samplesperbatch Integer indicating the number of of samples
 #' per batch.
-#' @param mvstmt Float (in (0,1)) indicating the fraction of missing values
+#' @param mvstmt Float (in [0,1)) indicating the fraction of missing values
 #' per batch. 
 #' @param imbalcov Float indicating the probability for one of the classes to be
 #' drawn as class label for each sample. The second class will have 
@@ -145,17 +221,26 @@ generateDataset <- function(
 #' @return A dataframe containing the simulated data. Column Cov_1 will contain
 #' the simulated, imbalanced labels.
 #' @examples
-#' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+#' # generate dataset with 1000 features, 5 batches, 10 samples per batch and
 #' # two genotypes. The class ratio will either be 7:3 or 3:7 per batch.
-#' data = generateDataCovariables(1000,5,10, 0.1, 0.3)
+#' data = generate_data_covariables(1000,5,10, 0.1, 0.3)
 #' @export
-generateDataCovariables <- function(
+generate_data_covariables <- function(
         features, 
         batches, 
         samplesperbatch, 
         mvstmt, 
         imbalcov, 
         housekeeping = NULL){
+    # validity check for input (except for imbalcov)
+    validate_input_generate_dataset(features, batches, samplesperbatch, mvstmt,
+                                    2, housekeeping, FALSE)
+    if(!is.numeric(imbalcov) || !(0<imbalcov && imbalcov<1)){
+        logging::logerror(paste("Parameter imbalcov should be in (0,1)",
+                          "in function generate_data_covariables"))
+        stop()
+    }
+    
     # genewise offset
     a <- stats::rnorm(features, mean=0, sd=1)
     # condition-specific offset
@@ -179,7 +264,7 @@ generateDataCovariables <- function(
     for(b in unique(batchvector)){
         # for each batch, determine randomly, whether class 1 has probability 
         # imbalcov, of class 2
-        if(stats::rnorm(1)>0){
+        if(stats::rbinom(1, 1, 0.5)>0){
             prob1 <- imbalcov
         }else{
             prob1 <- 1-imbalcov
@@ -251,73 +336,26 @@ generateDataCovariables <- function(
     return(finaldf)
 }
 
-
-#' Compute the average silhouette width (ASW) for the dataset with respect
-#' to both label and batch.
-#'
-#'Columns labelled Batch, Sample, Label, Reference and Cov_1 will be ignored.
-#'
-#' @param dataset Dataframe in the shape (samples, features) with additional
-#' columns Batch and Label.
-#' @return List with fields "Label" and "Batch" for the ASW with regards to 
-#' Label and Batch respectively.
-#' @examples
-#' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
-#' # two genotypes
-#' data = generateDataset(1000,5,10,0.1, 2)
-#' asw = compute_asw(data)
-#' asw
-#' @export
-compute_asw <- function(dataset){
-    dataset_nocov <- dataset [ , !grepl( "Cov" , names( dataset  ) ) ]
-    # numeric values in dataset only
-    num_values <- dataset_nocov[,!names(dataset_nocov) %in% c(
-        "Batch", 
-        "Sample", 
-        "Label", 
-        "Cov_1", 
-        "Reference")]
-    # compute distance matrix based on euclidean distances, ignoring NAs
-    distancematrix <- stats::dist(num_values)
-    
-    if("Label" %in% names(dataset_nocov)){
-        # labels as vector
-        labels <- as.vector(dataset_nocov[["Label"]])
-        # compute silhouette object wrt. labels
-        sil_labels <- cluster::silhouette(labels, dist=distancematrix)
-        # extract ASW wrt. labels
-        asw_label <- summary(sil_labels)["avg.width"]$avg.width
-    }else{
-        asw_label <- NA
-    }
-    if("Batch" %in% names(dataset_nocov)){
-        # batches as vector
-        batches <- as.vector(dataset_nocov[["Batch"]])
-        # compute silhouette object wrt. batches
-        sil_batches <- cluster::silhouette(batches, dist=distancematrix)
-        # extract ASW wrt. batches
-        asw_batches <- summary(sil_batches)["avg.width"]$avg.width
-    }else{
-        asw_batches <- NA
-    }
-    # create list object
-    ret <- list("Label" = asw_label, "Batch" = asw_batches)
-    return(ret)
-}
-
-#' Count the number of numeric features in this dataset. Columns labelled 
+#' Count the number of numeric features in this dataset. Columns labeled 
 #' "Batch", "Sample" or "Label" will be ignored.
 #'
 #' @param dataset Dataframe in the shape (samples, features) with optional
 #' columns "Batch", "Sample" or "Label".
 #' @return Integer indicating the number of numeric values
 #' @examples
-#' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+#' # generate dataset with 1000 features, 5 batches, 10 samples per batch and
 #' # two genotypes
-#' data = generateDataset(1000,5,10, 0.1, 2)
+#' data = generate_dataset(1000,5,10, 0.1, 2)
 #' count_existing(data)
 #' @export
 count_existing <- function(dataset){
+    
+    if(!is.data.frame(dataset)){
+        logging::logerror(paste("Parameter dataset in function count_existing",
+                                "must be of type dataframe."))
+        stop()
+    }
+    
     dataset_nocov <- dataset [ , !grepl( "Cov" , names( dataset  ) ) ]
     # select only numeric columns
     num_values <- dataset_nocov[,!names(dataset_nocov) %in% c(

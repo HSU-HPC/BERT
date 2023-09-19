@@ -81,7 +81,7 @@ parallel_bert <- function(
         mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
         data <- data [ , !grepl( "Cov" , names( data  ) ) ]
         # don't allow covariables AND references
-        if((dim(mod)[2]) & ("Reference" %in% names(data))){
+        if((ncol(mod)) & ("Reference" %in% names(data))){
             logging::logerror(paste("Covariable and reference columns should",
                                     "not exist simultanously."))
             stop()
@@ -106,7 +106,7 @@ parallel_bert <- function(
         }
         
         # append covariates again
-        if(dim(mod)[2]>1){
+        if(ncol(mod)>1){
             data <- cbind(data, mod)
         }else{
             # if we have only one covariable, its name will have changed --> do
@@ -119,6 +119,136 @@ parallel_bert <- function(
     
     # adjusted the assembled data with all the adjusted chunks
     return(adjusted_data)
+}
+
+#' Verifies the user input to BERT. Will raise an error if and only if the
+#' input is incorrect.
+#' @param data Matrix dataframe/SummarizedExperiment in the format (samples,
+#' features). 
+#' Additional column names are "Batch", "Cov_X" (were X may be any number),
+#' "Label", "Sample" and "Reference".
+#' @param cores The number of cores to use for parallel adjustment. Increasing
+#' this number leads to faster adjustment, especially on Linux machines. The
+#' default is 1.
+#' @param combatmode Integer, encoding the parameters to use for ComBat.
+#' 1 (default)    par.prior = TRUE, mean.only = FALSE
+#' 2              par.prior = TRUE, mean.only = TRUE
+#' 3              par.prior = FALSE, mean.only = FALSE
+#' 4              par.prior = FALSE, mean.only = TRUE
+#' Will be ignored, if method!="ComBat".
+#' @param method Adjustment method to use. Should either be "ComBat", "limma"
+#' or "ref". Also allows "None" for testing purposes, which will perform no BE
+#' adjustment
+#' @param qualitycontrol Boolean indicating, whether ASWs should be computed
+#' before and after batch effect adjustment. If TRUE, will compute ASW with
+#' respect to the "Batch" and "Label" column (if existent).
+#' @param verify Whether the input matrix/dataframe needs to be verified before
+#' adjustment (faster if FALSE)
+#' @param mpi Whether to use MPI for parallelization.
+#' @param stopParBatches The minimum number of batches required at a hierarchy
+#' level to proceed with parallelized adjustment. If the number of batches
+#' is smaller, adjustment will be performed sequentially to avoid overheads.
+#' @param corereduction Reducing the number of workers by at least this number
+#' @param backend The backend to choose for communicating the data. 
+#' Valid choices are "default" and "file". The latter will use temp files for
+#' communicating data chunks between the processes. after adjusting all
+#' sub-trees as far as possible with the previous number of cores.
+#' @param labelname A string containing the name of the column to use as class
+#' labels. The default is "Label".
+#' @param batchname A string containing the name of the column to use as batch
+#' labels. The default is "Batch".
+#' @param referencename A string containing the name of the column to use as 
+#' reference labels. The default is "Reference".
+#' @param covariatename A vector containing the names of columns with
+#' categorical covariables. The default is NULL, for which all columns with
+#' the pattern "Cov" will be selected.
+#' @return None
+validate_bert_input <- function(data, cores, combatmode,
+                                qualitycontrol, verify, mpi, stopParBatches,
+                                corereduction, backend, method, labelname,
+                                batchname, referencename, covariatename) {
+    if(!(methods::is(data, "SummarizedExperiment") || is.data.frame(data) ||
+         is.matrix(data))){
+        logging::logerror(paste("Input data for BERT must be either data.frame",
+                                ", matrix or SummarizedExperiment."))
+        stop()
+    }
+    
+    if(!(is.numeric(cores) && cores%%1==0 && cores>=1)){
+        logging::logerror("Parameter cores for BERT must be integer >=1")
+        stop()
+    }
+    if(!(combatmode %in% c(1,2,3,4))){
+        logging::logerror(paste("Parameter combatmode for BERT must be integer",
+                                "in {1,2,3,4}."))
+        stop()
+    }
+    if(!is.character(labelname)){
+        logging::logerror(paste("Parameter labelname for BERT must be string"))
+        stop() 
+    }
+    if(!is.character(batchname)){
+        logging::logerror(paste("Parameter batchname for BERT must be string"))
+        stop() 
+    }
+    if(!is.character(referencename)){
+        logging::logerror(paste("Parameter referencename for BERT must",
+                                "be string"))
+        stop() 
+    }
+    if(!is.null(covariatename)){
+        if(!is.vector(covariatename) ||
+           !all(vapply(covariatename, is.character,
+                       logical(1)))){
+            logging::logerror(paste("Parameter covariatename for BERT must",
+                                    "be vector of strings."))
+            stop() 
+        }
+    }
+    if(!is.logical(qualitycontrol)){
+        logging::logerror(paste("Parameter qualitycontrol for BERT must be",
+                                "either TRUE or FALSE."))
+        stop()
+    }
+    if(!is.logical(verify)){
+        logging::logerror(paste("Parameter verify for BERT must be",
+                                "either TRUE or FALSE."))
+        stop()
+    }
+    if(!is.logical(mpi)){
+        logging::logerror(paste("Parameter mpi for BERT must be",
+                                "either TRUE or FALSE."))
+        stop()
+    }
+    if(mpi){
+        if(!(("doMPI" %in% rownames(utils::installed.packages()))&&
+             ("Rmpi" %in% rownames(utils::installed.packages())))){
+            logging::logerror(paste("The packages doMPI and Rmpi must be",
+                                    "installed when using MPI."))
+            stop()
+        }
+    }
+    if(!(is.numeric(stopParBatches) && stopParBatches%%1==0)){
+        logging::logerror(paste("Parameter stopParBatches for BERT must be",
+                                "integer."))
+        stop()
+    }
+    if(!(is.numeric(corereduction) && corereduction%%1==0)){
+        logging::logerror(paste("Parameter corereduction for BERT must be",
+                                "integer."))
+        stop()
+    }
+    
+    if(!(backend %in% c("default", "file"))){
+        logging::logerror(paste("Parameter backend for BERT must be string",
+                                "in {\"default\", \"file\"}."))
+        stop()
+    }
+    if(!(method %in% c("limma", "ComBat", "ref", "None"))){
+        logging::logerror(paste("Parameter method for BERT must be string",
+                                "in {\"limma\", \"ComBat\", \"ref\"}."))
+        stop()
+    }
 }
 
 #' Adjust data using the BERT algorithm.
@@ -161,12 +291,21 @@ parallel_bert <- function(
 #' Valid choices are "default" and "file". The latter will use temp files for
 #' communicating data chunks between the processes. after adjusting all
 #' sub-trees as far as possible with the previous number of cores.
+#' @param labelname A string containing the name of the column to use as class
+#' labels. The default is "Label".
+#' @param batchname A string containing the name of the column to use as batch
+#' labels. The default is "Batch".
+#' @param referencename A string containing the name of the column to use as ref.
+#' labels. The default is "Reference".
+#' @param covariatename A vector containing the names of columns with
+#' categorical covariables. The default is NULL, for which all columns with
+#' the pattern "Cov" will be selected.
 #' @return A matrix/dataframe/SummarizedExperiment mirroring the shape of the
 #' input. The data will be batch-effect adjusted by BERT.
 #' @examples
-#' # generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+#' # generate dataset with 1000 features, 5 batches, 10 samples per batch and
 #' # two genotypes
-#' data = generateDataset(1000,5,10,0.1, 2)
+#' data = generate_dataset(1000,5,10,0.1, 2)
 #' corrected = BERT(data)
 #' @export
 BERT <- function(
@@ -179,7 +318,24 @@ BERT <- function(
         mpi=FALSE,
         stopParBatches = 4, 
         corereduction=2, 
-        backend="default"){
+        backend="default",
+        labelname="Label",
+        batchname="Batch",
+        referencename="Reference",
+        covariatename=NULL){
+    
+    # dummy code to suppress bioccheck warning
+    typeof(BiocStyle::html_document)
+    # validate user input
+    validate_bert_input(data, cores, combatmode,
+                        qualitycontrol, verify, mpi, stopParBatches,
+                        corereduction, backend, method, labelname,
+                        batchname, referencename, covariatename)
+    
+    # rename columns according to user input
+    old_names <- colnames(data)
+    
+    
     # store original cores
     original_cores <- cores
     
@@ -188,13 +344,14 @@ BERT <- function(
     
     # if SummarizedExperiment, we want to store the original input to preserve
     #all metadata
-    if(typeof(data)=="S4"){
+    if(methods::is(data, "SummarizedExperiment") ){
         original_data <- data
     }
     
     # format dataframe
     if(verify){
-        data <- format_DF(data)
+        data <- format_DF(data, labelname, batchname, referencename,
+                          covariatename)
     }else{
         logging::loginfo("Skipping initial DF formatting")
     }
@@ -244,7 +401,7 @@ BERT <- function(
     
     # count the current number of batches. BERT will adjust on new
     # hierarchy levels, as long as there are at least 2 batches
-    num_batches <- dim(unique(data["Batch"]))[1]
+    num_batches <- nrow(unique(data["Batch"]))
     logging::loginfo(paste("Found ", num_batches, " batches."))
     
     sub_tree_counter <- 1
@@ -261,7 +418,7 @@ BERT <- function(
             backend = backend)
         
         # the number of batches that remain in the adjusted data
-        num_batches <- dim(unique(data["Batch"]))[1]
+        num_batches <- nrow(unique(data["Batch"]))
         # we need to lower the number of cores, since the n_cores chunks have
         # already been adjusted as far as possible
         cores <- max(1, floor(cores/corereduction))
@@ -276,7 +433,7 @@ BERT <- function(
     mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
     data <- data [ , !grepl( "Cov" , names( data  ) ) ]
     # don't allow covariables AND references
-    if((dim(mod)[2]) & ("Reference" %in% names(data))){
+    if((ncol(mod)) & ("Reference" %in% names(data))){
         logging::logerror(paste(
             "Covariable and reference columns should",
             "not exist simultanously."))
@@ -290,7 +447,7 @@ BERT <- function(
             "batches"))
         data <- adjustment_step(data, mod, combatmode, method)
         # re-count the batches 
-        num_batches <- dim(unique(data["Batch"]))[1]
+        num_batches <- nrow(unique(data["Batch"]))
         hierarchy_level <- hierarchy_level+1
     }
     
@@ -298,13 +455,14 @@ BERT <- function(
     data[original_rownames, "Batch"] <- original_batches
     
     # append covariates again
-    if(dim(mod)[2]>1){
+    if(ncol(mod)>1){
         data <- cbind(data, mod)
     }else{
         # if we have only one covariable, its name will have changed --> do
         # it manually
         data["Cov_1"] <- mod[[colnames(mod)[1]]]
     }
+    
     # end timing measurement for the adjustment
     adjustment_end <- Sys.time()
     logging::loginfo("Done")
@@ -343,8 +501,11 @@ BERT <- function(
         }
     }
     
+    # rename everything back
+    names(data) <- old_names
+    
     # if SummarizedExperiment, return as such object as well
-    if(typeof(data)=="S4"){
+    if(methods::is(data, "SummarizedExperiment") ){
         value <- t(as.matrix(data))
         rownames(value) <- NULL
         colnames(value) <- NULL

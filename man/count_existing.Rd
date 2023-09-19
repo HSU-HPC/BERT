@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate_Dataset.R
 \name{count_existing}
 \alias{count_existing}
-\title{Count the number of numeric features in this dataset. Columns labelled
+\title{Count the number of numeric features in this dataset. Columns labeled
 "Batch", "Sample" or "Label" will be ignored.}
 \usage{
 count_existing(dataset)
@@ -15,12 +15,12 @@ columns "Batch", "Sample" or "Label".}
 Integer indicating the number of numeric values
 }
 \description{
-Count the number of numeric features in this dataset. Columns labelled
+Count the number of numeric features in this dataset. Columns labeled
 "Batch", "Sample" or "Label" will be ignored.
 }
 \examples{
-# generate dataset wiith 1000 features, 5 batches, 10 samples per batch and
+# generate dataset with 1000 features, 5 batches, 10 samples per batch and
 # two genotypes
-data = generateDataset(1000,5,10, 0.1, 2)
+data = generate_dataset(1000,5,10, 0.1, 2)
 count_existing(data)
 }

@@ -17,6 +17,6 @@ A logical with TRUE for adjustable features and FALSE for features
 with too many missing values.
 }
 \description{
-This function will be called automatically be BERT n data from each batch
+This function will be called automatically be BERT on data from each batch
 independently.
 }
