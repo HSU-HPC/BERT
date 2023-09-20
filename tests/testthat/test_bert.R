@@ -195,6 +195,17 @@ test_that("BERT allows the user to specify custom names for references", {
     expect_true(all.equal(y_1, y_2[rownames(y_2), colnames(y_2)]))
 })
 
+test_that("BERT removes empty columns and still renames everything back", {
+    nrows <- 8
+    ncols <- 3
+    counts <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
+    y = data.frame(counts)
+    y[,1] = NA
+    y["t"] = c(1,1,1,1,2,2,2,2)
+    y2 = BERT(y, batchname = "t")
+    expect_true(all.equal(c("X2", "X3", "t"), colnames(y2)))
+})
+
 test_that("BERT allows the user to specify custom names for covariables", {
     y <- generate_dataset(5,2,25,0.1,2)
     y["Cov_1"] = y$Label
@@ -211,41 +222,41 @@ test_that("bert validates all user input -- BERT", {
     y <- generate_dataset(100,5,10,0.1,2)
     # this should work
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", NULL), NA)
+                                     "file", "None", "X", "B", "R", "S",NULL), NA)
     expect_error(BERT(y, 1, 1,"ComBat", TRUE, FALSE, FALSE, 1, 2, "file", "X",
-                      "B", "R", NULL), NA)
+                      "B", "R", "S", NULL), NA)
     # this should crash
     expect_error(validate_bert_input("blubb", 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", NULL))
+                                     "file", "None", "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, -1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", NULL))
+                                     "file", "None", "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 10, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", NULL))
+                                     "file", "None", "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, "TRUE", FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", NULL))
+                                     "file", "None", "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, TRUE, "", FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", NULL))
+                                     "file", "None", "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, -10, 1, 2,
-                                     "file", "None", "X", "B", "R", NULL))
+                                     "file", "None", "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, FALSE, 2,
-                                     "file", "None", "X", "B", "R", NULL))
+                                     "file", "None", "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, "",
-                                     "file", "None", "X", "B", "R", NULL))
+                                     "file", "None", "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "f", "None", "X", "B", "R", NULL))
+                                     "f", "None", "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     -1, "None", "X", "B", "R", NULL))
+                                     -1, "None", "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", FALSE, "X", "B", "R", NULL))
+                                     "file", FALSE, "X", "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", -1, "B", "R", NULL))
+                                     "file", "None", -1, "B", "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", FALSE, "R", NULL))
+                                     "file", "None", "X", FALSE, "R", "S", NULL))
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", FALSE, "R", c()))
+                                     "file", "None", "X", FALSE, "R", "S", c()))
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
                                      "file", "None", "X", FALSE, "R",
-                                     c("c", 1)))
+                                     "S", c("c", 1)))
     
 })
 

@@ -159,6 +159,8 @@ parallel_bert <- function(
 #' labels. The default is "Batch".
 #' @param referencename A string containing the name of the column to use as 
 #' reference labels. The default is "Reference".
+#' @param samplename A string containing the name of the column to use as sample
+#' name. The default is "Sample".
 #' @param covariatename A vector containing the names of columns with
 #' categorical covariables. The default is NULL, for which all columns with
 #' the pattern "Cov" will be selected.
@@ -166,7 +168,8 @@ parallel_bert <- function(
 validate_bert_input <- function(data, cores, combatmode,
                                 qualitycontrol, verify, mpi, stopParBatches,
                                 corereduction, backend, method, labelname,
-                                batchname, referencename, covariatename) {
+                                batchname, referencename, samplename,
+                                covariatename) {
     if(!(methods::is(data, "SummarizedExperiment") || is.data.frame(data) ||
          is.matrix(data))){
         logging::logerror(paste("Input data for BERT must be either data.frame",
@@ -185,6 +188,10 @@ validate_bert_input <- function(data, cores, combatmode,
     }
     if(!is.character(labelname)){
         logging::logerror(paste("Parameter labelname for BERT must be string"))
+        stop() 
+    }
+    if(!is.character(samplename)){
+        logging::logerror(paste("Parameter samplename for BERT must be string"))
         stop() 
     }
     if(!is.character(batchname)){
@@ -297,6 +304,8 @@ validate_bert_input <- function(data, cores, combatmode,
 #' labels. The default is "Batch".
 #' @param referencename A string containing the name of the column to use as ref.
 #' labels. The default is "Reference".
+#' @param samplename A string containing the name of the column to use as sample
+#' name. The default is "Sample".
 #' @param covariatename A vector containing the names of columns with
 #' categorical covariables. The default is NULL, for which all columns with
 #' the pattern "Cov" will be selected.
@@ -322,6 +331,7 @@ BERT <- function(
         labelname="Label",
         batchname="Batch",
         referencename="Reference",
+        samplename="Sample",
         covariatename=NULL){
     
     # dummy code to suppress bioccheck warning
@@ -330,10 +340,7 @@ BERT <- function(
     validate_bert_input(data, cores, combatmode,
                         qualitycontrol, verify, mpi, stopParBatches,
                         corereduction, backend, method, labelname,
-                        batchname, referencename, covariatename)
-    
-    # rename columns according to user input
-    old_names <- colnames(data)
+                        batchname, referencename, samplename, covariatename)
     
     
     # store original cores
@@ -350,7 +357,7 @@ BERT <- function(
     
     # format dataframe
     if(verify){
-        data <- format_DF(data, labelname, batchname, referencename,
+        data <- format_DF(data, labelname, batchname, referencename, samplename,
                           covariatename)
     }else{
         logging::loginfo("Skipping initial DF formatting")
@@ -501,8 +508,14 @@ BERT <- function(
         }
     }
     
-    # rename everything back
-    names(data) <- old_names
+    # rename again
+    colnames(data)[colnames(data)=="Batch"] <- batchname
+    colnames(data)[colnames(data)=="Label"] <- labelname
+    colnames(data)[colnames(data)=="Sample"] <- samplename
+    
+    for(x in covariatename){
+        colnames(data)[colnames(data)==paste("Cov_",x, sep="")] <- x
+    }
     
     # if SummarizedExperiment, return as such object as well
     if(methods::is(data, "SummarizedExperiment") ){

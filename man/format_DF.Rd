@@ -9,6 +9,7 @@ format_DF(
   labelname = "Label",
   batchname = "Batch",
   referencename = "Reference",
+  samplename = "Sample",
   covariatename = NULL
 )
 }
@@ -23,6 +24,9 @@ labels. The default is "Batch".}
 
 \item{referencename}{A string containing the name of the column to use as ref.
 labels. The default is "Reference".}
+
+\item{samplename}{A string containing the name of the column to use as sample
+name. The default is "Sample".}
 
 \item{covariatename}{A vector containing the names of columns with
 categorical covariables. The default is NULL, for which all columns with

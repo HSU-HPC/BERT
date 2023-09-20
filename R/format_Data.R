@@ -45,6 +45,8 @@ replace_missing <- function(data){
 #' labels. The default is "Batch".
 #' @param referencename A string containing the name of the column to use as ref.
 #' labels. The default is "Reference".
+#' @param samplename A string containing the name of the column to use as sample
+#' name. The default is "Sample".
 #' @param covariatename A vector containing the names of columns with
 #' categorical covariables. The default is NULL, for which all columns with
 #' the pattern "Cov" will be selected.
@@ -52,7 +54,8 @@ replace_missing <- function(data){
 #' "Label" and "Sample".
 #' @return The formatted matrix.
 format_DF <- function(data, labelname="Label",batchname="Batch",
-                      referencename="Reference", covariatename=NULL){
+                      referencename="Reference", samplename="Sample",
+                      covariatename=NULL){
     logging::loginfo("Formatting Data.")
     
     if(methods::is(data, "SummarizedExperiment")){
@@ -71,16 +74,18 @@ format_DF <- function(data, labelname="Label",batchname="Batch",
         # in columns
         raw_data <- data.frame(t(SummarizedExperiment::assay(data)))
         # obtain batch/label/sample/reference column
-        raw_data["Batch"] <- SummarizedExperiment::colData(data)$Batch
+        raw_data["Batch"] <- SummarizedExperiment::colData(data)[batchname][,1]
         if("Sample" %in% names(SummarizedExperiment::colData(data))){
-            raw_data["Sample"] <- SummarizedExperiment::colData(data)$Sample
+            raw_data["Sample"] <- SummarizedExperiment::colData(
+                data)[samplename][,1]
         }
-        if("Label" %in% names(SummarizedExperiment::colData(data))){
-            raw_data["Label"] <- SummarizedExperiment::colData(data)$Label
+        if(labelname %in% names(SummarizedExperiment::colData(data))){
+            raw_data["Label"] <- SummarizedExperiment::colData(
+                data)[labelname][,1]
         }
-        if("Reference" %in% names(SummarizedExperiment::colData(data))){
+        if(referencename %in% names(SummarizedExperiment::colData(data))){
             raw_data["Reference"] <- SummarizedExperiment::colData(
-                data)$Reference
+                data)[referencename][,1]
         }
         # potential covariables
         cov_names <- names(
