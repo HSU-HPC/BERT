@@ -19,7 +19,8 @@ BERT(
   batchname = "Batch",
   referencename = "Reference",
   samplename = "Sample",
-  covariatename = NULL
+  covariatename = NULL,
+  assayname = NULL
 )
 }
 \arguments{
@@ -78,6 +79,9 @@ name. The default is "Sample".}
 \item{covariatename}{A vector containing the names of columns with
 categorical covariables. The default is NULL, for which all columns with
 the pattern "Cov" will be selected.}
+
+\item{assayname}{User-defined string that specifies, which assay to select,
+if the input data is a SummarizedExperiment. The default is NULL.}
 }
 \value{
 A matrix/dataframe/SummarizedExperiment mirroring the shape of the

@@ -10,7 +10,8 @@ format_DF(
   batchname = "Batch",
   referencename = "Reference",
   samplename = "Sample",
-  covariatename = NULL
+  covariatename = NULL,
+  assayname = NULL
 )
 }
 \arguments{
@@ -33,6 +34,9 @@ categorical covariables. The default is NULL, for which all columns with
 the pattern "Cov" will be selected.
 Additional column names are "Batch", "Cov_X" (were X may be any number),
 "Label" and "Sample".}
+
+\item{assayname}{User-defined string that specifies, which assay to select,
+if the input data is a SummarizedExperiment. The default is NULL.}
 }
 \value{
 The formatted matrix.

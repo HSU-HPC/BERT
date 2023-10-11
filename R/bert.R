@@ -80,8 +80,9 @@ parallel_bert <- function(
         data <- data [ , !grepl( "Cov" , names( data  ) ) ]
         # don't allow covariables AND references
         if((ncol(mod)) & ("Reference" %in% names(data))){
-            stop(paste("Covariable and reference columns should",
-                       "not exist simultanously."))
+            error_str <- paste("Covariable and reference columns should",
+                               "not exist simultanously.")
+            stop(error_str)
         }
         
         # number of batches at current level
@@ -177,16 +178,18 @@ validate_bert_input <- function(data, cores, combatmode,
     
     if(!(methods::is(data, "SummarizedExperiment") || is.data.frame(data) ||
          is.matrix(data))){
-        stop(paste("Input data for BERT must be either data.frame",
-                   ", matrix or SummarizedExperiment."))
+        error_str <- paste("Input data for BERT must be either data.frame",
+                          ", matrix or SummarizedExperiment.")
+        stop(error_str)
     }
     
     if(!(is.numeric(cores) && cores%%1==0 && cores>=1)){
         stop("Parameter cores for BERT must be integer >=1")
     }
     if(!(combatmode %in% c(1,2,3,4))){
-        stop(paste("Parameter combatmode for BERT must be integer",
-                   "in {1,2,3,4}."))
+        error_str <- paste("Parameter combatmode for BERT must be integer",
+                          "in {1,2,3,4}.")
+        stop(error_str)
     }
     if(!is.character(labelname)){
         stop("Parameter labelname for BERT must be string") 
@@ -198,52 +201,62 @@ validate_bert_input <- function(data, cores, combatmode,
         stop("Parameter batchname for BERT must be string") 
     }
     if(!is.character(referencename)){
-        stop(paste("Parameter referencename for BERT must",
-                   "be string")) 
+        error_str <- paste("Parameter referencename for BERT must",
+                          "be string")
+        stop(error_str)
     }
     if(!is.null(covariatename)){
         if(!is.vector(covariatename) ||
            !all(vapply(covariatename, is.character,
                        logical(1)))){
-            stop(paste("Parameter covariatename for BERT must",
-                       "be vector of strings.")) 
+            error_str <- paste("Parameter covariatename for BERT must",
+                               "be vector of strings.")
+            stop(error_str)
         }
     }
     if(!is.logical(qualitycontrol)){
-        stop(paste("Parameter qualitycontrol for BERT must be",
-                   "either TRUE or FALSE."))
+        error_str <- paste("Parameter qualitycontrol for BERT must be",
+                           "either TRUE or FALSE.")
+        stop(error_str)
     }
     if(!is.logical(verify)){
-        stop(paste("Parameter verify for BERT must be",
-                   "either TRUE or FALSE."))
+        error_str <- paste("Parameter verify for BERT must be",
+                           "either TRUE or FALSE.")
+        stop(error_str)
     }
     if(!is.logical(mpi)){
-        stop(paste("Parameter mpi for BERT must be",
-                   "either TRUE or FALSE."))
+        error_str <- paste("Parameter mpi for BERT must be",
+                           "either TRUE or FALSE.")
+        stop(error_str)
     }
     if(mpi){
         if(!(("doMPI" %in% rownames(utils::installed.packages()))&&
              ("Rmpi" %in% rownames(utils::installed.packages())))){
-            stop(paste("The packages doMPI and Rmpi must be",
-                       "installed when using MPI."))
+            error_str <- paste("The packages doMPI and Rmpi must be",
+                               "installed when using MPI.")
+            stop(error_str)
         }
     }
     if(!(is.numeric(stopParBatches) && stopParBatches%%1==0)){
-        stop(paste("Parameter stopParBatches for BERT must be",
-                   "integer."))
+        error_str <- paste("Parameter stopParBatches for BERT must be",
+                           "integer.")
+        stop(error_str)
     }
     if(!(is.numeric(corereduction) && corereduction%%1==0)){
-        stop(paste("Parameter corereduction for BERT must be",
-                   "integer."))
+        error_str <- paste("Parameter corereduction for BERT must be",
+                           "integer.")
+        stop(error_str)
     }
     
     if(!(backend %in% c("default", "file"))){
-        stop(paste("Parameter backend for BERT must be string",
-                   "in {\"default\", \"file\"}."))
+        error_str <- paste("Parameter backend for BERT must be string",
+                           "in {\"default\", \"file\"}.")
+        stop(error_str)
     }
     if(!(method %in% c("limma", "ComBat", "ref", "None"))){
-        stop(paste("Parameter method for BERT must be string",
-                   "in {\"limma\", \"ComBat\", \"ref\"}."))
+        error_str <- paste("Parameter method for BERT must be string",
+                           "in {\"limma\", \"ComBat\", \"ref\"}.")
+        stop(error_str)
     }
 }
 
@@ -434,9 +447,10 @@ BERT <- function(
     data <- data [ , !grepl( "Cov" , names( data  ) ) ]
     # don't allow covariables AND references
     if((ncol(mod)) & ("Reference" %in% names(data))){
-        stop(paste(
+        error_str <- paste(
             "Covariable and reference columns should",
-            "not exist simultanously."))
+            "not exist simultanously.")
+        stop(error_str)
     }
     hierarchy_level <- 1
     while (num_batches > 1) {

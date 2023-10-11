@@ -29,8 +29,9 @@ ordinal_encode <- function(column){
 compute_asw <- function(dataset){
     # check that input is indeed a dataframe.
     if(!is.data.frame(dataset)){
-        stop(paste("Parameter dataset in function compute_asw",
-                   "must be of type dataframe."))
+        error_str <- paste("Parameter dataset in function compute_asw",
+                           "must be of type dataframe.")
+        stop(error_str)
     }
     
     # create copy in which we can apply ordinal-encoding to Batch and Label

@@ -14,7 +14,7 @@ verify_references <- function(batch){
         if(sum(is_ref)>1){
             return(TRUE)
         }else{
-            logging::logerror("Require at least two references per batch.")
+            logging::loginfo("Require at least two references per batch.")
             return(FALSE)
         }
     }
@@ -185,7 +185,8 @@ format_DF <- function(data, labelname="Label",batchname="Batch",
         data[data["Batch"] == b, !adjustable_batch] <- NA
         # require at least two references per batch
         if(!verify_references(data_batch)){
-            stop(paste("Reference column error in batch", b))
+            error_str <- paste("Reference column error in batch", b)
+            stop(error_str)
         }
     }
     # count missing values

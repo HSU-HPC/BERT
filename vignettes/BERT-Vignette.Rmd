@@ -180,7 +180,7 @@ expr_values <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
 # Reference or Covariables
 colData <- data.frame("Batch"=c(1,1,1,1,2,2,2,2), "Label"=c(1,2,1,2,1,2,1,2), "Sample"=c(1,2,3,4,5,6,7,8))
 dataset_raw = SummarizedExperiment::SummarizedExperiment(assays=list(expr=expr_values), colData=colData)
-dataset_adjusted = BERT(dataset_raw)
+dataset_adjusted = BERT(dataset_raw, assayname = "expr")
 ```
 
 
