@@ -23,48 +23,40 @@ validate_input_generate_dataset <- function(features,
                                             housekeeping, 
                                             deterministic) {
     if(!is.numeric(features) || !features%%1==0 || features<=0){
-        logging::logerror(paste("Please provide positive integer arguments to",
-                                "features in function generate_dataset"))
-        stop()
+        stop(paste("Please provide positive integer arguments to",
+                   "features in function generate_dataset"))
     }
     if(!is.numeric(batches) || !batches%%1==0 || batches<=1){
-        logging::logerror(paste("Please provide integer (>=2) arguments to",
-                                "batches in function generate_dataset"))
-        stop()
+        stop(paste("Please provide integer (>=2) arguments to",
+                   "batches in function generate_dataset"))
     }
     if(!is.numeric(samplesperbatch) || !samplesperbatch%%1==0 ||
        samplesperbatch<=1){
-        logging::logerror(paste("Please provide integer (>=2) arguments to",
-                                "samplesperbatch in function generate_dataset"))
-        stop()
+        stop(paste("Please provide integer (>=2) arguments to",
+                   "samplesperbatch in function generate_dataset"))
     }
     if(!is.numeric(mvstmt) || !(0<=mvstmt && mvstmt<1)){
-        logging::logerror(paste("Parameter mvstmt in function generate_dataset",
-                                "must be in [0,1)"))
-        stop()
+        stop(paste("Parameter mvstmt in function generate_dataset",
+                   "must be in [0,1)"))
     }
     if(!is.numeric(classes) || !classes%%1==0 || classes<=0){
-        logging::logerror(paste("Please provide positive integer arguments to",
-                                "classes in function generate_dataset"))
-        stop()
+        stop(paste("Please provide positive integer arguments to",
+                   "classes in function generate_dataset"))
     }
     if(!is.null(housekeeping)){
         if(!is.numeric(housekeeping) || !(0<housekeeping && housekeeping<1)){
-            logging::logerror(paste("Parameter housekeeping in function",
-                                    "generate_dataset must be in NULL or",
-                                    "(0,1)"))
-            stop()
+            stop(paste("Parameter housekeeping in function",
+                       "generate_dataset must be in NULL or",
+                       "(0,1)"))
         }
         if(mvstmt + housekeeping>1){
-            logging::logerror("Sum of parameters mvstmt and housekeeping in",
-                              "generate_dataset must be <=1.")
-            stop()
+            stop(paste("Sum of parameters mvstmt and housekeeping in",
+                 "generate_dataset must be <=1."))
         }
     }
     if(!is.logical(deterministic)){
-        logging::logerror("Parameter deterministic in function",
-                          "generate_dataset must be TRUE/FALSE.")
-        stop()
+        stop(paste("Parameter deterministic in function",
+                   "generate_dataset must be TRUE/FALSE."))
     }
 }
 
@@ -236,9 +228,8 @@ generate_data_covariables <- function(
     validate_input_generate_dataset(features, batches, samplesperbatch, mvstmt,
                                     2, housekeeping, FALSE)
     if(!is.numeric(imbalcov) || !(0<imbalcov && imbalcov<1)){
-        logging::logerror(paste("Parameter imbalcov should be in (0,1)",
-                          "in function generate_data_covariables"))
-        stop()
+        stop(paste("Parameter imbalcov should be in (0,1)",
+                   "in function generate_data_covariables"))
     }
     
     # genewise offset
@@ -351,9 +342,8 @@ generate_data_covariables <- function(
 count_existing <- function(dataset){
     
     if(!is.data.frame(dataset)){
-        logging::logerror(paste("Parameter dataset in function count_existing",
-                                "must be of type dataframe."))
-        stop()
+        stop(paste("Parameter dataset in function count_existing",
+                   "must be of type dataframe."))
     }
     
     dataset_nocov <- dataset [ , !grepl( "Cov" , names( dataset  ) ) ]

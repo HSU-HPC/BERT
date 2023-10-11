@@ -26,24 +26,26 @@ BERT addresses the same fundamental data integration challenges than the [Harmon
 **Please note that our package _BERT_ is neither affiliated with nor related to _Bidirectional Encoder Representations from Transformers_ as published by Google.**
 
 # Installation
-Please download and install a current version of R ([Windows binaries](https://cran.r-project.org/bin/windows/base/release.html)). You might want to consider installing a development environment as well, e.g. [RStudio](https://posit.co/downloads/). Next, install the *Bioconductor* packages `sva` and `limma` by executing
-```{r, eval=FALSE}
-if (!require("BiocManager", quietly = TRUE)){
-    install.packages("BiocManager")
-}
-BiocManager::install("sva")
-BiocManager::install("limma")
-```
-Finally, BERT can either be installed via Bioconductor using
+Please download and install a current version of R ([Windows binaries](https://cran.r-project.org/bin/windows/base/release.html)). You might want to consider installing a development environment as well, e.g. [RStudio](https://posit.co/downloads/).
+Finally, BERT can  be installed via Bioconductor using
 ```{r, eval=FALSE}
 if (!require("BiocManager", quietly = TRUE)){
     install.packages("BiocManager")
 }
 BiocManager::install("BERT")
 ```
-or by using ```devtools```
+which will install all required dependencies. To install the development version of BERT, you can use devtools as follows
+
 ```{r, eval=FALSE}
 devtools::install_github("HSU-HPC/BERT")
+```
+which may require the manual installation of the dependencies `sva` and `limma`.
+```{r, eval=FALSE}
+if (!require("BiocManager", quietly = TRUE)){
+    install.packages("BiocManager")
+}
+BiocManager::install("sva")
+BiocManager::install("limma")
 ```
 # Data Preparation
 
@@ -127,6 +129,7 @@ The value of this parameter will be ignored, if `method!="ComBat"`.
 - `referencename`: A string containing the name of the column to use as reference labels. The default is "Reference".
 
 - `covariatename`: A vector containing the names of columns with categorical covariables.The default is NULL, in which case all column names are matched agains the pattern "Cov".
+- `assayname`: If the user chooses to pass a `SummarizedExperiment` object, they need to specify the name of the assay that they want to apply BERT to here. BERT then returns the input `SummarizedExperiment` with an additional assay labeled `assayname_BERTcorrected`.
 
 ## Verbosity
 BERT utilizes the ```logging``` package for output. The user can easily specify the verbosity of BERT by setting the global logging level in the script. For instance
@@ -170,10 +173,12 @@ Here, BERT takes the input data using a ```SummarizedExperiment``` instead. Batc
 ```{r}
 nrows <- 200
 ncols <- 8
+# SummarizedExperiments store samples in columns and features in rows (in contrast to BERT).
+# BERT will automatically account for this.
 expr_values <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
 # colData also takes further metadata information, such as Label, Sample,
 # Reference or Covariables
-colData <- data.frame(Batch=c(1,1,1,1,2,2,2,2))
+colData <- data.frame("Batch"=c(1,1,1,1,2,2,2,2), "Label"=c(1,2,1,2,1,2,1,2), "Sample"=c(1,2,3,4,5,6,7,8))
 dataset_raw = SummarizedExperiment::SummarizedExperiment(assays=list(expr=expr_values), colData=colData)
 dataset_adjusted = BERT(dataset_raw)
 ```

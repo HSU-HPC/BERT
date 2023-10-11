@@ -7,14 +7,17 @@ identify_references <- function(batch, references){
     # numbers of the two batches <- must be two
     batch_vals <- unique(batch)
     if(length(batch_vals)!=2){
-        logging::logerror("removeBatchEffectRefs takes only two batches")
-        stop()
+        stop("removeBatchEffectRefs takes only two batches")
     }
     batch1 <- batch_vals[1]
     batch2 <- batch_vals[2]
     # assemble references
     possible_idx <- seq_len(length(batch))
     ref_idx <- c()
+    
+    t1 <- vector(mode="logical", length=length(batch))
+    t2 <- vector(mode="logical", length=length(batch))
+    
     
     for(cl in unique(references)){
         if(cl!=0){
@@ -37,8 +40,7 @@ identify_references <- function(batch, references){
         }
     }
     if(length(ref_idx)<2){
-        logging::logerror("Did not find enough references of common class.")
-        stop()
+        stop("Did not find enough references of common class.")
     }
     # convert references to boolean
     isref <- (references==max(unique(references))+1)

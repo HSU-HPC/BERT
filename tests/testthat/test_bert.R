@@ -140,7 +140,19 @@ test_that("BERT likes SummarizedExperiments",{
   counts <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
   colData <- data.frame(Batch=c(1,1,1,1,2,2,2,2))
   y = SummarizedExperiment::SummarizedExperiment(assays=list(counts=counts), colData=colData)
-  expect_error(BERT(y), NA)
+  expect_error(BERT(y, assayname = "counts"), NA)
+})
+
+test_that("BERT writes new assay to SummarizedExperiments",{
+    nrows <- 200
+    ncols <- 8
+    counts <- matrix(runif(nrows * ncols, 1, 1e4), nrows)
+    colData <- data.frame(Batch=c(1,1,1,1,2,2,2,2))
+    y = SummarizedExperiment::SummarizedExperiment(assays=list(counts=counts), colData=colData)
+    y_corrected = BERT(y, assayname = "counts", method="None")
+    raw_mat = SummarizedExperiment::assays(y)$counts
+    proc_mat = SummarizedExperiment::assays(y)$counts_BERTcorrected
+    expect_true(all(raw_mat=proc_mat))
 })
 
 
@@ -225,6 +237,12 @@ test_that("bert validates all user input -- BERT", {
                                      "file", "None", "X", "B", "R", "S",NULL), NA)
     expect_error(BERT(y, 1, 1,"ComBat", TRUE, FALSE, FALSE, 1, 2, "file", "X",
                       "B", "R", "S", NULL), NA)
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", "B", "R", "S",NULL,
+                                     NULL), NA)
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", "B", "R", "S",NULL,
+                                     "blubb"), NA)
     # this should crash
     expect_error(validate_bert_input("blubb", 1, 1, TRUE, FALSE, FALSE, 1, 2,
                                      "file", "None", "X", "B", "R", "S", NULL))
@@ -257,6 +275,13 @@ test_that("bert validates all user input -- BERT", {
     expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
                                      "file", "None", "X", FALSE, "R",
                                      "S", c("c", 1)))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", "B", "R", "S",NULL,
+                                     1))
+    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
+                                     "file", "None", "X", "B", "R", "S",NULL,
+                                     FALSE))
+    
     
 })
 

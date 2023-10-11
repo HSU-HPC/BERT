@@ -19,8 +19,7 @@ chunk_data <- function(data, n, backend="default"){
     }else if (backend=="file"){
         chunks <- c()
     }else{
-        logging::logerror("Unrecognized backend.")
-        stop()
+        stop("Unrecognized backend.")
     }
     counter <- 1
     for(split in splits){
@@ -73,8 +72,7 @@ parallel_bert <- function(
             data <- chunk
             is_rank_1 <- FALSE # deactivates logging on all processes
         }else{
-            logging::logerror("Unrecognized communication backend.")
-            stop()
+            stop("Unrecognized communication backend.")
         }
         
         # split data and covariates
@@ -82,9 +80,8 @@ parallel_bert <- function(
         data <- data [ , !grepl( "Cov" , names( data  ) ) ]
         # don't allow covariables AND references
         if((ncol(mod)) & ("Reference" %in% names(data))){
-            logging::logerror(paste("Covariable and reference columns should",
-                                    "not exist simultanously."))
-            stop()
+            stop(paste("Covariable and reference columns should",
+                       "not exist simultanously."))
         }
         
         # number of batches at current level
@@ -164,97 +161,89 @@ parallel_bert <- function(
 #' @param covariatename A vector containing the names of columns with
 #' categorical covariables. The default is NULL, for which all columns with
 #' the pattern "Cov" will be selected.
+#' @param assayname User-defined string that specifies, which assay to select,
+#' if the input data is a SummarizedExperiment. The default is NULL.
 #' @return None
 validate_bert_input <- function(data, cores, combatmode,
                                 qualitycontrol, verify, mpi, stopParBatches,
                                 corereduction, backend, method, labelname,
                                 batchname, referencename, samplename,
-                                covariatename) {
+                                covariatename, assayname=NULL) {
+    if(!is.null(assayname)){
+        if(!is.character(assayname)){
+            stop("Parameter assayname must be NULL or a string.")
+        }
+    }
+    
     if(!(methods::is(data, "SummarizedExperiment") || is.data.frame(data) ||
          is.matrix(data))){
-        logging::logerror(paste("Input data for BERT must be either data.frame",
-                                ", matrix or SummarizedExperiment."))
-        stop()
+        stop(paste("Input data for BERT must be either data.frame",
+                   ", matrix or SummarizedExperiment."))
     }
     
     if(!(is.numeric(cores) && cores%%1==0 && cores>=1)){
-        logging::logerror("Parameter cores for BERT must be integer >=1")
-        stop()
+        stop("Parameter cores for BERT must be integer >=1")
     }
     if(!(combatmode %in% c(1,2,3,4))){
-        logging::logerror(paste("Parameter combatmode for BERT must be integer",
-                                "in {1,2,3,4}."))
-        stop()
+        stop(paste("Parameter combatmode for BERT must be integer",
+                   "in {1,2,3,4}."))
     }
     if(!is.character(labelname)){
-        logging::logerror(paste("Parameter labelname for BERT must be string"))
-        stop() 
+        stop("Parameter labelname for BERT must be string") 
     }
     if(!is.character(samplename)){
-        logging::logerror(paste("Parameter samplename for BERT must be string"))
-        stop() 
+        stop("Parameter samplename for BERT must be string") 
     }
     if(!is.character(batchname)){
-        logging::logerror(paste("Parameter batchname for BERT must be string"))
-        stop() 
+        stop("Parameter batchname for BERT must be string") 
     }
     if(!is.character(referencename)){
-        logging::logerror(paste("Parameter referencename for BERT must",
-                                "be string"))
-        stop() 
+        stop(paste("Parameter referencename for BERT must",
+                   "be string")) 
     }
     if(!is.null(covariatename)){
         if(!is.vector(covariatename) ||
            !all(vapply(covariatename, is.character,
                        logical(1)))){
-            logging::logerror(paste("Parameter covariatename for BERT must",
-                                    "be vector of strings."))
-            stop() 
+            stop(paste("Parameter covariatename for BERT must",
+                       "be vector of strings.")) 
         }
     }
     if(!is.logical(qualitycontrol)){
-        logging::logerror(paste("Parameter qualitycontrol for BERT must be",
-                                "either TRUE or FALSE."))
-        stop()
+        stop(paste("Parameter qualitycontrol for BERT must be",
+                   "either TRUE or FALSE."))
     }
     if(!is.logical(verify)){
-        logging::logerror(paste("Parameter verify for BERT must be",
-                                "either TRUE or FALSE."))
-        stop()
+        stop(paste("Parameter verify for BERT must be",
+                   "either TRUE or FALSE."))
     }
     if(!is.logical(mpi)){
-        logging::logerror(paste("Parameter mpi for BERT must be",
-                                "either TRUE or FALSE."))
-        stop()
+        stop(paste("Parameter mpi for BERT must be",
+                   "either TRUE or FALSE."))
     }
     if(mpi){
         if(!(("doMPI" %in% rownames(utils::installed.packages()))&&
              ("Rmpi" %in% rownames(utils::installed.packages())))){
-            logging::logerror(paste("The packages doMPI and Rmpi must be",
-                                    "installed when using MPI."))
-            stop()
+            stop(paste("The packages doMPI and Rmpi must be",
+                       "installed when using MPI."))
         }
     }
     if(!(is.numeric(stopParBatches) && stopParBatches%%1==0)){
-        logging::logerror(paste("Parameter stopParBatches for BERT must be",
-                                "integer."))
-        stop()
+        stop(paste("Parameter stopParBatches for BERT must be",
+                   "integer."))
     }
     if(!(is.numeric(corereduction) && corereduction%%1==0)){
-        logging::logerror(paste("Parameter corereduction for BERT must be",
-                                "integer."))
-        stop()
+        stop(paste("Parameter corereduction for BERT must be",
+                   "integer."))
     }
     
     if(!(backend %in% c("default", "file"))){
-        logging::logerror(paste("Parameter backend for BERT must be string",
-                                "in {\"default\", \"file\"}."))
-        stop()
+        stop(paste("Parameter backend for BERT must be string",
+                   "in {\"default\", \"file\"}."))
     }
     if(!(method %in% c("limma", "ComBat", "ref", "None"))){
-        logging::logerror(paste("Parameter method for BERT must be string",
-                                "in {\"limma\", \"ComBat\", \"ref\"}."))
-        stop()
+        stop(paste("Parameter method for BERT must be string",
+                   "in {\"limma\", \"ComBat\", \"ref\"}."))
     }
 }
 
@@ -309,6 +298,8 @@ validate_bert_input <- function(data, cores, combatmode,
 #' @param covariatename A vector containing the names of columns with
 #' categorical covariables. The default is NULL, for which all columns with
 #' the pattern "Cov" will be selected.
+#' @param assayname User-defined string that specifies, which assay to select,
+#' if the input data is a SummarizedExperiment. The default is NULL.
 #' @return A matrix/dataframe/SummarizedExperiment mirroring the shape of the
 #' input. The data will be batch-effect adjusted by BERT.
 #' @examples
@@ -332,7 +323,8 @@ BERT <- function(
         batchname="Batch",
         referencename="Reference",
         samplename="Sample",
-        covariatename=NULL){
+        covariatename=NULL,
+        assayname=NULL){
     
     # dummy code to suppress bioccheck warning
     typeof(BiocStyle::html_document)
@@ -340,7 +332,8 @@ BERT <- function(
     validate_bert_input(data, cores, combatmode,
                         qualitycontrol, verify, mpi, stopParBatches,
                         corereduction, backend, method, labelname,
-                        batchname, referencename, samplename, covariatename)
+                        batchname, referencename, samplename, covariatename,
+                        assayname)
     
     
     # store original cores
@@ -358,7 +351,7 @@ BERT <- function(
     # format dataframe
     if(verify){
         data <- format_DF(data, labelname, batchname, referencename, samplename,
-                          covariatename)
+                          covariatename, assayname)
     }else{
         logging::loginfo("Skipping initial DF formatting")
     }
@@ -441,10 +434,9 @@ BERT <- function(
     data <- data [ , !grepl( "Cov" , names( data  ) ) ]
     # don't allow covariables AND references
     if((ncol(mod)) & ("Reference" %in% names(data))){
-        logging::logerror(paste(
+        stop(paste(
             "Covariable and reference columns should",
             "not exist simultanously."))
-        stop()
     }
     hierarchy_level <- 1
     while (num_batches > 1) {
@@ -522,7 +514,7 @@ BERT <- function(
         value <- t(as.matrix(data))
         rownames(value) <- NULL
         colnames(value) <- NULL
-        SummarizedExperiment::assay(original_data) <- value
+        SummarizedExperiment::assay(original_data, paste(assayname, "BERTcorrected", sep="_")) <- value
         data <- original_data
     }
     

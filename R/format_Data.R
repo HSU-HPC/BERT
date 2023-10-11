@@ -52,27 +52,24 @@ replace_missing <- function(data){
 #' the pattern "Cov" will be selected.
 #' Additional column names are "Batch", "Cov_X" (were X may be any number),
 #' "Label" and "Sample".
+#' @param assayname User-defined string that specifies, which assay to select,
+#' if the input data is a SummarizedExperiment. The default is NULL.
 #' @return The formatted matrix.
 format_DF <- function(data, labelname="Label",batchname="Batch",
                       referencename="Reference", samplename="Sample",
-                      covariatename=NULL){
+                      covariatename=NULL, assayname=NULL){
     logging::loginfo("Formatting Data.")
     
     if(methods::is(data, "SummarizedExperiment")){
         # Summarized Experiment
         logging::loginfo(paste(
-            "Recognized input as S4 class ",
-            "- assuming SummarizedExperiment"))
-        if(length(SummarizedExperiment::assays(data))!=1){
-            logging::logerror(paste("BERT only supports batch effect",
-                                    "correction for SummarizedExperiments",
-                                    "with a single assay."))
-            stop()
-        }
+            "Recognized SummarizedExperiment"))
+       
+        
         logging::loginfo("Typecasting input to dataframe.")
         # obtain raw data from assay with observations in rows and features
         # in columns
-        raw_data <- data.frame(t(SummarizedExperiment::assay(data)))
+        raw_data <- data.frame(t(SummarizedExperiment::assays(data)[[assayname]]))
         # obtain batch/label/sample/reference column
         raw_data["Batch"] <- SummarizedExperiment::colData(data)[batchname][,1]
         if("Sample" %in% names(SummarizedExperiment::colData(data))){
@@ -142,8 +139,7 @@ format_DF <- function(data, labelname="Label",batchname="Batch",
         cov_names <- cov_names[dtypes=="character"]
     }
     if(length(cov_names)>0){
-        logging::logerror("Covariables with non-integer values detected.")
-        stop()
+        stop("Covariables with non-integer values detected.")
     }
     
     logging::loginfo("Removing potential empty rows and columns")
@@ -189,8 +185,7 @@ format_DF <- function(data, labelname="Label",batchname="Batch",
         data[data["Batch"] == b, !adjustable_batch] <- NA
         # require at least two references per batch
         if(!verify_references(data_batch)){
-            logging::logerror(paste("Reference column error in batch", b))
-            stop()
+            stop(paste("Reference column error in batch", b))
         }
     }
     # count missing values
