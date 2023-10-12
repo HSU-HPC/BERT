@@ -1,6 +1,6 @@
 Package: BERT
 Title: Hierarchical Batch-Effect Adjustment with Trees
-Version: 0.99.7
+Version: 0.99.8
 Authors@R: 
     c(person("Yannis", "Schumann", , "schumany@hsu-hh.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-2379-200X")),
@@ -23,25 +23,20 @@ Depends: R (>= 4.3.0)
 Imports: 
     cluster,
     comprehenr,
-    doParallel (>= 1.0.17),
     foreach (>= 1.5.2),
     invgamma,
     iterators (>= 1.0.14),
     janitor (>= 2.2.0),
     limma (>= 3.46.0),
     logging (>= 0.10-108),
-    parallel,
     sva (>= 3.38.0),
     SummarizedExperiment,
     BiocStyle,
     methods,
-    utils
+    BiocParallel
 Suggests: 
     testthat (>= 3.0.0),
     knitr,
     rmarkdown
-Enhances:
-    doMPI,
-    Rmpi
 Config/testthat/edition: 3
 VignetteBuilder: knitr

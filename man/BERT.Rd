@@ -6,15 +6,14 @@
 \usage{
 BERT(
   data,
-  cores = 1,
+  cores = NULL,
   combatmode = 1,
+  corereduction = 4,
+  stopParBatches = 2,
+  backend = "default",
   method = "ComBat",
   qualitycontrol = TRUE,
   verify = TRUE,
-  mpi = FALSE,
-  stopParBatches = 4,
-  corereduction = 2,
-  backend = "default",
   labelname = "Label",
   batchname = "Batch",
   referencename = "Reference",
@@ -27,11 +26,13 @@ BERT(
 \item{data}{Matrix dataframe/SummarizedExperiment in the format (samples,
 features).
 Additional column names are "Batch", "Cov_X" (were X may be any number),
-"Label", "Sample" and "Reference".}
+"Label", "Sample" and "Reference". Must contain at least two features.}
 
 \item{cores}{The number of cores to use for parallel adjustment. Increasing
 this number leads to faster adjustment, especially on Linux machines. The
-default is 1.}
+default is NULL, in which case the BiocParallel::bpparam() backend will be
+used. If an integer is given, a backend with the corresponding number
+of workers will be created and registered as default for usage.}
 
 \item{combatmode}{Integer, encoding the parameters to use for ComBat.
 1 (default)    par.prior = TRUE, mean.only = FALSE
@@ -39,6 +40,18 @@ default is 1.}
 3              par.prior = FALSE, mean.only = FALSE
 4              par.prior = FALSE, mean.only = TRUE
 Will be ignored, if method!="ComBat".}
+
+\item{corereduction}{Reducing the number of workers by at least this number.
+Only used if cores is an integer.}
+
+\item{stopParBatches}{The minimum number of batches required at a hierarchy
+level to proceed with parallelized adjustment. If the number of batches
+is smaller, adjustment will be performed sequentially to avoid overheads.}
+
+\item{backend}{The backend to choose for communicating the data.
+Valid choices are "default" and "file". The latter will use temp files for
+communicating data chunks between the processes. after adjusting all
+sub-trees as far as possible with the previous number of cores.}
 
 \item{method}{Adjustment method to use. Should either be "ComBat", "limma"
 or "ref". Also allows "None" for testing purposes, which will perform no BE
@@ -50,19 +63,6 @@ respect to the "Batch" and "Label" column (if existent).}
 
 \item{verify}{Whether the input matrix/dataframe needs to be verified before
 adjustment (faster if FALSE)}
-
-\item{mpi}{Whether to use MPI for parallelization.}
-
-\item{stopParBatches}{The minimum number of batches required at a hierarchy
-level to proceed with parallelized adjustment. If the number of batches
-is smaller, adjustment will be performed sequentially to avoid overheads.}
-
-\item{corereduction}{Reducing the number of workers by at least this number}
-
-\item{backend}{The backend to choose for communicating the data.
-Valid choices are "default" and "file". The latter will use temp files for
-communicating data chunks between the processes. after adjusting all
-sub-trees as far as possible with the previous number of cores.}
 
 \item{labelname}{A string containing the name of the column to use as class
 labels. The default is "Label".}
@@ -100,5 +100,5 @@ all other columns are assumed to contain data.
 # generate dataset with 1000 features, 5 batches, 10 samples per batch and
 # two genotypes
 data = generate_dataset(1000,5,10,0.1, 2)
-corrected = BERT(data)
+corrected = BERT(data, cores=2)
 }

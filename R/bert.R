@@ -55,17 +55,14 @@ chunk_data <- function(data, n, backend="default"){
 parallel_bert <- function(
         chunks, 
         method="ComBat", 
-        combatmode=1, 
-        backend="default"){
-    `%dopar%` <- foreach::`%dopar%`
-    chunk <- NULL
+        combatmode=1,
+        backend = "default"){
+    
     # parallel adjustment as far as possible for this chunk
-    adjusted_data <- foreach::foreach(
-        chunk=iterators::iter(chunks), 
-        .combine = rbind,
-        .export = "adjustment_step") %dopar% {
+    biocbackend <- BiocParallel::bpparam()
+    result <- BiocParallel::bplapply(chunks, function(chunk){
         if(backend=="file"){
-            is_rank_1 <- (chunk==chunks[1])
+            is_rank_1 <- FALSE#(chunk==chunks[1])
             # read dataframe containing the adjusted data
             data <- readRDS(chunk)
         }else if (backend=="default"){
@@ -74,7 +71,6 @@ parallel_bert <- function(
         }else{
             stop("Unrecognized communication backend.")
         }
-        
         # split data and covariates
         mod <- data.frame(data [ , grepl( "Cov" , names( data  ) ) ])
         data <- data [ , !grepl( "Cov" , names( data  ) ) ]
@@ -97,7 +93,6 @@ parallel_bert <- function(
             }
             data <- adjustment_step(data, mod, combatmode, method)
             
-            # new number of batches
             num_batches <- length(unique(data$Batch))
             # increase hierarchy level
             hierarchy_counter <- hierarchy_counter + 1
@@ -113,27 +108,38 @@ parallel_bert <- function(
         }
         # return the adjusted split
         data
-    }
+    }, BPPARAM=biocbackend)
+    
+    adjusted_data <- do.call("rbind", result)
     
     # adjusted the assembled data with all the adjusted chunks
     return(adjusted_data)
 }
 
-#' Verifies the user input to BERT. Will raise an error if and only if the
-#' input is incorrect.
 #' @param data Matrix dataframe/SummarizedExperiment in the format (samples,
 #' features). 
 #' Additional column names are "Batch", "Cov_X" (were X may be any number),
-#' "Label", "Sample" and "Reference".
+#' "Label", "Sample" and "Reference". Must contain at least two features.
 #' @param cores The number of cores to use for parallel adjustment. Increasing
 #' this number leads to faster adjustment, especially on Linux machines. The
 #' default is 1.
+#' @param bpparameters Optional, default is NULL. If given, this should be
+#' a BiocParallel BiocParallelParam instance. Note, that BERT will register
+#' this instance as the default
 #' @param combatmode Integer, encoding the parameters to use for ComBat.
 #' 1 (default)    par.prior = TRUE, mean.only = FALSE
 #' 2              par.prior = TRUE, mean.only = TRUE
 #' 3              par.prior = FALSE, mean.only = FALSE
 #' 4              par.prior = FALSE, mean.only = TRUE
 #' Will be ignored, if method!="ComBat".
+#' @param corereduction Reducing the number of workers by at least this number
+#' @param stopParBatches The minimum number of batches required at a hierarchy
+#' level to proceed with parallelized adjustment. If the number of batches
+#' is smaller, adjustment will be performed sequentially to avoid overheads.
+#' @param backend The backend to choose for communicating the data. 
+#' Valid choices are "default" and "file". The latter will use temp files for
+#' communicating data chunks between the processes. after adjusting all
+#' sub-trees as far as possible with the previous number of cores.
 #' @param method Adjustment method to use. Should either be "ComBat", "limma"
 #' or "ref". Also allows "None" for testing purposes, which will perform no BE
 #' adjustment
@@ -142,21 +148,12 @@ parallel_bert <- function(
 #' respect to the "Batch" and "Label" column (if existent).
 #' @param verify Whether the input matrix/dataframe needs to be verified before
 #' adjustment (faster if FALSE)
-#' @param mpi Whether to use MPI for parallelization.
-#' @param stopParBatches The minimum number of batches required at a hierarchy
-#' level to proceed with parallelized adjustment. If the number of batches
-#' is smaller, adjustment will be performed sequentially to avoid overheads.
-#' @param corereduction Reducing the number of workers by at least this number
-#' @param backend The backend to choose for communicating the data. 
-#' Valid choices are "default" and "file". The latter will use temp files for
-#' communicating data chunks between the processes. after adjusting all
-#' sub-trees as far as possible with the previous number of cores.
 #' @param labelname A string containing the name of the column to use as class
 #' labels. The default is "Label".
 #' @param batchname A string containing the name of the column to use as batch
 #' labels. The default is "Batch".
-#' @param referencename A string containing the name of the column to use as 
-#' reference labels. The default is "Reference".
+#' @param referencename A string containing the name of the column to use as ref.
+#' labels. The default is "Reference".
 #' @param samplename A string containing the name of the column to use as sample
 #' name. The default is "Sample".
 #' @param covariatename A vector containing the names of columns with
@@ -164,100 +161,65 @@ parallel_bert <- function(
 #' the pattern "Cov" will be selected.
 #' @param assayname User-defined string that specifies, which assay to select,
 #' if the input data is a SummarizedExperiment. The default is NULL.
-#' @return None
+#' @return None. Will instead throw an error, if input is not as intended.
 validate_bert_input <- function(data, cores, combatmode,
-                                qualitycontrol, verify, mpi, stopParBatches,
-                                corereduction, backend, method, labelname,
-                                batchname, referencename, samplename,
-                                covariatename, assayname=NULL) {
-    if(!is.null(assayname)){
-        if(!is.character(assayname)){
-            stop("Parameter assayname must be NULL or a string.")
-        }
-    }
+                                corereduction, stopParBatches, backend, method,
+                                qualitycontrol, verify, labelname, batchname, 
+                                referencename, samplename, covariatename,
+                                assayname){
     
-    if(!(methods::is(data, "SummarizedExperiment") || is.data.frame(data) ||
-         is.matrix(data))){
-        error_str <- paste("Input data for BERT must be either data.frame",
-                          ", matrix or SummarizedExperiment.")
-        stop(error_str)
-    }
-    
-    if(!(is.numeric(cores) && cores%%1==0 && cores>=1)){
-        stop("Parameter cores for BERT must be integer >=1")
-    }
-    if(!(combatmode %in% c(1,2,3,4))){
-        error_str <- paste("Parameter combatmode for BERT must be integer",
-                          "in {1,2,3,4}.")
-        stop(error_str)
-    }
-    if(!is.character(labelname)){
-        stop("Parameter labelname for BERT must be string") 
-    }
-    if(!is.character(samplename)){
-        stop("Parameter samplename for BERT must be string") 
-    }
-    if(!is.character(batchname)){
-        stop("Parameter batchname for BERT must be string") 
-    }
-    if(!is.character(referencename)){
-        error_str <- paste("Parameter referencename for BERT must",
-                          "be string")
-        stop(error_str)
-    }
-    if(!is.null(covariatename)){
-        if(!is.vector(covariatename) ||
-           !all(vapply(covariatename, is.character,
-                       logical(1)))){
-            error_str <- paste("Parameter covariatename for BERT must",
-                               "be vector of strings.")
-            stop(error_str)
-        }
-    }
-    if(!is.logical(qualitycontrol)){
-        error_str <- paste("Parameter qualitycontrol for BERT must be",
-                           "either TRUE or FALSE.")
-        stop(error_str)
-    }
-    if(!is.logical(verify)){
-        error_str <- paste("Parameter verify for BERT must be",
-                           "either TRUE or FALSE.")
-        stop(error_str)
-    }
-    if(!is.logical(mpi)){
-        error_str <- paste("Parameter mpi for BERT must be",
-                           "either TRUE or FALSE.")
-        stop(error_str)
-    }
-    if(mpi){
-        if(!(("doMPI" %in% rownames(utils::installed.packages()))&&
-             ("Rmpi" %in% rownames(utils::installed.packages())))){
-            error_str <- paste("The packages doMPI and Rmpi must be",
-                               "installed when using MPI.")
-            stop(error_str)
-        }
-    }
-    if(!(is.numeric(stopParBatches) && stopParBatches%%1==0)){
-        error_str <- paste("Parameter stopParBatches for BERT must be",
-                           "integer.")
-        stop(error_str)
-    }
-    if(!(is.numeric(corereduction) && corereduction%%1==0)){
-        error_str <- paste("Parameter corereduction for BERT must be",
-                           "integer.")
-        stop(error_str)
-    }
-    
-    if(!(backend %in% c("default", "file"))){
-        error_str <- paste("Parameter backend for BERT must be string",
-                           "in {\"default\", \"file\"}.")
-        stop(error_str)
-    }
-    if(!(method %in% c("limma", "ComBat", "ref", "None"))){
-        error_str <- paste("Parameter method for BERT must be string",
-                           "in {\"limma\", \"ComBat\", \"ref\"}.")
-        stop(error_str)
-    }
+    # data should have at least two features
+    stopifnot("data should be dataframe, matrix or SummarizedExperiment"={
+        is.matrix(data) || is.data.frame(data) || 
+            methods::is(data, "SummarizedExperiment")
+    })
+    stopifnot("cores should be integer >=1 or NULL" = {
+        (cores%%1==0 && cores>0) || is.null(cores)
+        })
+    stopifnot("combatmode should be in c(1,2,3,4)"={
+        combatmode %in% c(1,2,3,4)
+    })
+    stopifnot("combatmode should be in c(1,2,3,4)"={
+        (combatmode %in% c(1,2,3,4))&&is.numeric(combatmode)
+    })
+    stopifnot("corereduction should be integer >=1"={
+        corereduction%%1==0 && corereduction>0
+    })
+    stopifnot("stopParBatches should be integer >=1"={
+        stopParBatches%%1==0 && stopParBatches>0
+    })
+    stopifnot("backend should be in c(\"default\", \"file\")"={
+        backend %in% c("default", "file")
+    })
+    stopifnot("method should be in c(\"ComBat\", \"limma\", \"None\", \"ref\")"={
+        method %in% c("ComBat", "limma", "None", "ref")
+    })
+    stopifnot("qualitycontrol should be either TRUE or FALSE" = {
+        qualitycontrol %in% c(TRUE, FALSE)
+    })
+    stopifnot("verify should be either TRUE or FALSE" = {
+        verify %in% c(TRUE, FALSE)
+    })
+    stopifnot("labelname must be string with length >=1" = {
+        is.character(labelname) && nchar(labelname)>0
+    })
+    stopifnot("batchname must be string with length >=1" = {
+        is.character(batchname) && nchar(batchname)>0
+    })
+    stopifnot("referencename must be string with length >=1" = {
+        is.character(referencename) && nchar(referencename)>0
+    })
+    stopifnot("samplename must be string with length >=1" = {
+        is.character(samplename) && nchar(samplename)>0
+    })
+    stopifnot("covariatename must be string with length >=1 or NULL" = {
+        (is.character(covariatename) && nchar(covariatename)>0) ||
+            is.null(covariatename)
+    })
+    stopifnot("assayname must be string with length >=1 or NULL" = {
+        (is.character(assayname) && nchar(assayname)>0) ||
+            is.null(assayname)
+    })
 }
 
 #' Adjust data using the BERT algorithm.
@@ -273,16 +235,27 @@ validate_bert_input <- function(data, cores, combatmode,
 #' @param data Matrix dataframe/SummarizedExperiment in the format (samples,
 #' features). 
 #' Additional column names are "Batch", "Cov_X" (were X may be any number),
-#' "Label", "Sample" and "Reference".
+#' "Label", "Sample" and "Reference". Must contain at least two features.
 #' @param cores The number of cores to use for parallel adjustment. Increasing
 #' this number leads to faster adjustment, especially on Linux machines. The
-#' default is 1.
+#' default is NULL, in which case the BiocParallel::bpparam() backend will be
+#' used. If an integer is given, a backend with the corresponding number
+#' of workers will be created and registered as default for usage.
 #' @param combatmode Integer, encoding the parameters to use for ComBat.
 #' 1 (default)    par.prior = TRUE, mean.only = FALSE
 #' 2              par.prior = TRUE, mean.only = TRUE
 #' 3              par.prior = FALSE, mean.only = FALSE
 #' 4              par.prior = FALSE, mean.only = TRUE
 #' Will be ignored, if method!="ComBat".
+#' @param corereduction Reducing the number of workers by at least this number.
+#' Only used if cores is an integer.
+#' @param stopParBatches The minimum number of batches required at a hierarchy
+#' level to proceed with parallelized adjustment. If the number of batches
+#' is smaller, adjustment will be performed sequentially to avoid overheads.
+#' @param backend The backend to choose for communicating the data. 
+#' Valid choices are "default" and "file". The latter will use temp files for
+#' communicating data chunks between the processes. after adjusting all
+#' sub-trees as far as possible with the previous number of cores.
 #' @param method Adjustment method to use. Should either be "ComBat", "limma"
 #' or "ref". Also allows "None" for testing purposes, which will perform no BE
 #' adjustment
@@ -291,15 +264,6 @@ validate_bert_input <- function(data, cores, combatmode,
 #' respect to the "Batch" and "Label" column (if existent).
 #' @param verify Whether the input matrix/dataframe needs to be verified before
 #' adjustment (faster if FALSE)
-#' @param mpi Whether to use MPI for parallelization.
-#' @param stopParBatches The minimum number of batches required at a hierarchy
-#' level to proceed with parallelized adjustment. If the number of batches
-#' is smaller, adjustment will be performed sequentially to avoid overheads.
-#' @param corereduction Reducing the number of workers by at least this number
-#' @param backend The backend to choose for communicating the data. 
-#' Valid choices are "default" and "file". The latter will use temp files for
-#' communicating data chunks between the processes. after adjusting all
-#' sub-trees as far as possible with the previous number of cores.
 #' @param labelname A string containing the name of the column to use as class
 #' labels. The default is "Label".
 #' @param batchname A string containing the name of the column to use as batch
@@ -319,19 +283,18 @@ validate_bert_input <- function(data, cores, combatmode,
 #' # generate dataset with 1000 features, 5 batches, 10 samples per batch and
 #' # two genotypes
 #' data = generate_dataset(1000,5,10,0.1, 2)
-#' corrected = BERT(data)
+#' corrected = BERT(data, cores=2)
 #' @export
 BERT <- function(
         data, 
-        cores = 1, 
+        cores = NULL,
         combatmode = 1, 
+        corereduction=4,
+        stopParBatches=2,
+        backend="default",
         method="ComBat",
         qualitycontrol=TRUE, 
-        verify=TRUE, 
-        mpi=FALSE,
-        stopParBatches = 4, 
-        corereduction=2, 
-        backend="default",
+        verify=TRUE,
         labelname="Label",
         batchname="Batch",
         referencename="Reference",
@@ -341,16 +304,13 @@ BERT <- function(
     
     # dummy code to suppress bioccheck warning
     typeof(BiocStyle::html_document)
-    # validate user input
-    validate_bert_input(data, cores, combatmode,
-                        qualitycontrol, verify, mpi, stopParBatches,
-                        corereduction, backend, method, labelname,
-                        batchname, referencename, samplename, covariatename,
-                        assayname)
+    
+    validate_bert_input(data, cores, combatmode, corereduction,
+                        stopParBatches, backend, method, qualitycontrol,
+                        verify, labelname, batchname, referencename,
+                        samplename, covariatename, assayname)
     
     
-    # store original cores
-    original_cores <- cores
     
     # measure starting time
     total_start <- Sys.time()
@@ -376,31 +336,6 @@ BERT <- function(
         asws_prior <- compute_asw(data)
     }
     
-    if(mpi){
-        logging::loginfo("Starting MPI cluster.")
-        cl <- doMPI::startMPIcluster()
-        doMPI::registerDoMPI(cl)
-        logging::loginfo("Done")
-    } else if (cores > 1) {
-        # recommended only on linux
-        logging::loginfo(paste("Setting up cluster with ", cores, " cores."))
-        if (.Platform$OS.type == "windows") {
-            # set up cluster
-            cl <- parallel::makeCluster(cores)
-            logging::loginfo(paste(
-                "Identified OS as Windows. Using Parallel",
-                "Socket Cluster (PSOCK)."))
-        } else{
-            # set up cluster with forking.
-            cl <- parallel::makeForkCluster(cores)
-            logging::loginfo(paste(
-                "Identified OS as UNIX (aka not windows).", 
-                "Using forking."))
-        }
-        # register parallel backend
-        doParallel::registerDoParallel(cl)
-        logging::loginfo("Done")
-    }
     
     # store the original batches, because we need to manually set them again
     # after adjustment
@@ -417,13 +352,49 @@ BERT <- function(
     num_batches <- nrow(unique(data["Batch"]))
     logging::loginfo(paste("Found ", num_batches, " batches."))
     
+    user_defined_backend <- FALSE
+    
+    if(is.null(cores)){
+        logging::loginfo(paste("Cores argument is not defined.",
+                               "Defaulting to BiocParallel::bpparam().",
+                               "Argumens corereduction",
+                               "will not be used."))
+        user_defined_backend <- TRUE
+    }else{
+        if(cores==1){
+            bpparameters <- BiocParallel::SerialParam()
+            logging::loginfo("Set up sequential backend")
+        }else{
+            if(.Platform$OS.type == "windows"){
+                bpparameters <- BiocParallel::SnowParam(workers = cores)
+            }else{
+                bpparameters <- BiocParallel::MulticoreParam(workers = cores)
+            }
+            logging::loginfo(paste("Set up parallel execution backend with",
+                                   cores, "workers"))
+        }
+        BiocParallel::register(bpparameters, default = TRUE)
+        user_defined_backend <- FALSE
+    }
+    
     sub_tree_counter <- 1
-    while((num_batches>stopParBatches)&&(cores>1)){
-        logging::loginfo(paste(
-            "Processing subtree level",
-            sub_tree_counter,"with",
-            num_batches,"batches using",cores,"cores."))
+    while(((num_batches>stopParBatches)&&is.null(cores))||
+          ((num_batches>stopParBatches)&&(cores>1))){
+        
+        if(!is.null(cores)){
+            logging::loginfo(paste(
+                "Processing subtree level",
+                sub_tree_counter,"with",
+                num_batches,"batches using",cores,"cores."))
+        }else{
+            logging::loginfo(paste(
+                "Processing subtree level",
+                sub_tree_counter))
+        }
+        
+        
         chunks <- chunk_data(data, cores, backend = backend)
+        
         data <- parallel_bert(
             chunks, 
             method=method, 
@@ -434,7 +405,16 @@ BERT <- function(
         num_batches <- nrow(unique(data["Batch"]))
         # we need to lower the number of cores, since the n_cores chunks have
         # already been adjusted as far as possible
-        cores <- max(1, floor(cores/corereduction))
+        
+        if((!user_defined_backend)){
+            cores <- max(1, floor(cores/corereduction))
+            if(.Platform$OS.type == "windows"){
+                bpparameters <- BiocParallel::SnowParam(workers = cores)
+            }else{
+                bpparameters <- BiocParallel::MulticoreParam(workers = cores)
+            }
+            BiocParallel::register(bpparameters, default = TRUE)
+        }
         
         sub_tree_counter <- sub_tree_counter+1
     }
@@ -480,16 +460,6 @@ BERT <- function(
     adjustment_end <- Sys.time()
     logging::loginfo("Done")
     
-    # stop cluster
-    if(mpi){
-        doMPI::closeCluster(cl)
-        Rmpi::mpi.finalize()
-        logging::loginfo("Done")
-    }else if (original_cores > 1) {
-        logging::loginfo("Stopping cluster gracefully.")
-        parallel::stopCluster(cl)
-        logging::loginfo("Done")
-    }
     # compute ASWs, if required
     if(qualitycontrol){
         logging::loginfo(paste(

@@ -62,12 +62,29 @@ test_that("only one batch remains after subtree adjustment -- parallel_bert",{
   y <- data.frame(y)
   y["Batch"] <- c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5)
   chunks <- chunk_data(y, 1)
-  cl <- parallel::makeCluster(1)
-  doParallel::registerDoParallel(cl)
-  adjusteddata <- parallel_bert(chunks, 1, method = "None")
-  parallel::stopCluster(cl)
+  BiocParallel::register(BiocParallel::SerialParam(), default = TRUE)
+  adjusteddata <- parallel_bert(chunks, method = "None")
   num_batches = length(unique(adjusteddata$Batch))
   expect_equal(num_batches, 1)
+})
+
+test_that("parallel_bert works equivalently in sequential or parallel mode",{
+    # generate data
+    y <- generate_dataset(50,10,10,0.1,2)
+    chunks <- chunk_data(y, 2)
+    BiocParallel::register(BiocParallel::SerialParam(), default = TRUE)
+    adjusteddata_sequential <- parallel_bert(chunks, method = "None")
+    BiocParallel::register(BiocParallel::SnowParam(workers = 2), default = TRUE)
+    adjusteddata_parallel <- parallel_bert(chunks, method = "None")
+    expect_true(all(adjusteddata_sequential==adjusteddata_parallel, na.rm = TRUE))
+})
+
+test_that("parallel_bert has correct rownames",{
+    # generate data
+    y <- generate_dataset(50,10,10,0.1,2)
+    chunks <- chunk_data(y, 2)
+    adjusteddata_sequential <- parallel_bert(chunks, method = "None")
+    expect_true(all(y[colnames(y)[colnames(y)!="Batch"]]==adjusteddata_sequential[row.names(y),][colnames(y)[colnames(y)!="Batch"]], na.rm = TRUE))
 })
 
 test_that("parallel_bert works with file communication backend",{
@@ -76,10 +93,8 @@ test_that("parallel_bert works with file communication backend",{
   y <- data.frame(y)
   y["Batch"] <- c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5)
   chunks <- chunk_data(y, 1, "file")
-  cl <- parallel::makeCluster(1)
-  doParallel::registerDoParallel(cl)
+  BiocParallel::register(BiocParallel::SerialParam(), default = TRUE)
   adjusteddata <- parallel_bert(chunks, 1, method = "None", "file")
-  parallel::stopCluster(cl)
   num_batches = length(unique(adjusteddata$Batch))
   expect_equal(num_batches, 1)
 })
@@ -232,57 +247,32 @@ test_that("BERT allows the user to specify custom names for covariables", {
 test_that("bert validates all user input -- BERT", {
     # generate dataset, 9 samples, 10 features
     y <- generate_dataset(100,5,10,0.1,2)
-    # this should work
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", "S",NULL), NA)
-    expect_error(BERT(y, 1, 1,"ComBat", TRUE, FALSE, FALSE, 1, 2, "file", "X",
-                      "B", "R", "S", NULL), NA)
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", "S",NULL,
-                                     NULL), NA)
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", "S",NULL,
-                                     "blubb"), NA)
-    # this should crash
-    expect_error(validate_bert_input("blubb", 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, -1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 10, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, "TRUE", FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, "", FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, -10, 1, 2,
-                                     "file", "None", "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, FALSE, 2,
-                                     "file", "None", "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, "",
-                                     "file", "None", "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "f", "None", "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     -1, "None", "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", FALSE, "X", "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", -1, "B", "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", FALSE, "R", "S", NULL))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", FALSE, "R", "S", c()))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", FALSE, "R",
-                                     "S", c("c", 1)))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", "S",NULL,
-                                     1))
-    expect_error(validate_bert_input(y, 1, 1, TRUE, FALSE, FALSE, 1, 2,
-                                     "file", "None", "X", "B", "R", "S",NULL,
-                                     FALSE))
-    
-    
+    # this should not work
+    expect_error(BERT("string"))
+    expect_error(BERT(y, cores=-1))
+    expect_error(BERT(y, cores="hui"))
+    expect_error(BERT(y, combatmode = -1))
+    expect_error(BERT(y, combatmode = "1"))
+    expect_error(BERT(y, corereduction = "1"))
+    expect_error(BERT(y, stopParBatches = "-1"))
+    expect_error(BERT(y, backend = 1))
+    expect_error(BERT(y, method = TRUE))
+    expect_error(BERT(y, qualitycontrol = -1))
+    expect_error(BERT(y, qualitycontrol = ""))
+    expect_error(BERT(y, verify = -1))
+    expect_error(BERT(y, verify = ""))
+    expect_error(BERT(y, labelname = ""))
+    expect_error(BERT(y, labelname = 1))
+    expect_error(BERT(y, batchname = ""))
+    expect_error(BERT(y, batchname = 1))
+    expect_error(BERT(y, referencename = ""))
+    expect_error(BERT(y, referencename = 1))
+    expect_error(BERT(y, samplename = ""))
+    expect_error(BERT(y, samplename = 1))
+    expect_error(BERT(y, covariatename = ""))
+    expect_error(BERT(y, covariatename = 1))
+    expect_error(BERT(y, assayname = ""))
+    expect_error(BERT(y, assayname = 1))
 })
 
 test_that("works equally with dataframes and matrices -- BERT", {
@@ -318,6 +308,13 @@ test_that("BERT prints ASW Batch if qualitycontrol is TRUE -- BERT", {
   rownames(y) <- c("A","B","C","D","E","F","G","H","I")
   colnames(y) <- c("A1","B2","C3","D4","E5","F6","G7","H8","I9","J10", "Batch")
   expect_output(BERT(y, method="None", qualitycontrol = TRUE), "\\w*ASW Batch was\\w*")
+})
+
+test_that("BERT works with both default backend (from bpparam) and with user-defined number of cores", {
+    ds = generate_dataset(100,10,10,0.1,2)
+    y_default = BERT(ds, method = "None")
+    y_self = BERT(ds, method = "None", cores = 2)
+    expect_true(all(y_default==y_self, na.rm = TRUE))
 })
 
 
