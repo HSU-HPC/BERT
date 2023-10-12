@@ -34,6 +34,9 @@ Moreover, BERT offers a more user-friendly design and a less error-prone input f
 
 **Please note that our package *BERT* is neither affiliated with nor related to *Bidirectional Encoder Representations from Transformers* as published by Google.**
 
+
+_Please report any questions and issues in the GitHub forum, the BioConductor forum or directly contact [the authors](mailto:schumany@hsu-hh.de,schlumbohm@hsu-hh.de),_
+
 # Installation
 
 Please download and install a current version of R ([Windows binaries](https://cran.r-project.org/bin/windows/base/release.html)).
@@ -123,8 +126,8 @@ dataset_adjusted <- BERT(dataset_raw)
 ```
 
 BERT uses the `logging` library to convey live information to the user during the adjustment procedure.
-The algorithm first verifies the shape and suitability of the input dataframe (lines 1-6) before continuing with the actual batch effect correction (lines 8-15).
-BERT measure batch effects before and after the correction step by means of the average silhouette score (ASW) with respect to batch and labels (lines 7 and 16).
+The algorithm first verifies the shape and suitability of the input dataframe (lines 1-6) before continuing with the actual batch effect correction (lines 8-14).
+BERT measure batch effects before and after the correction step by means of the average silhouette score (ASW) with respect to batch and labels (lines 7 and 15).
 The ASW Label should increase in a successful batch effect correction, whereas low values ($\leq 0$) are desireable for the ASW Batch[^3].
 Finally, BERT prints the total function execution time (including the computation time for the quality metrics).
 
@@ -147,7 +150,7 @@ See [Data Preparation](#data-preparation) for detailed formatting instructions.
 - `data` The data for batch-effect correction.
 Must contain at least two samples per batch and 2 features.
 
--   `cores`: BERT uses [BiocParallel](https://bioconductor.org/packages/release/bioc/html/BiocParallel.html) for parallelization. By default, the method uses the `BPPARAM` registered by the user. If the user specified a specific number of cores, BERT registers a new instance of `BiocParallelParam`. Modifying this parameter can speed up the batch effect adjustment considerably, in particular for large datasets and on unix-based operating systems. A value between $2$ and $4$ is a reasonable choice for typical commodity hardware. Multi-node computations are not supported as of now.
+-   `cores`: BERT uses [BiocParallel](https://bioconductor.org/packages/release/bioc/html/BiocParallel.html) for parallelization. By default, the method uses the current default `BPPARAM` registered by the user. If the user specified a specific number of cores, BERT registers a new instance of `BiocParallelParam`. Modifying this parameter can speed up the batch effect adjustment considerably, in particular for large datasets and on unix-based operating systems. A value between $2$ and $4$ is a reasonable choice for typical commodity hardware. Multi-node computations are not supported as of now.
 -   `combatmode` An integer that encodes the parameters to use for ComBat.
 
 | Value | par.prior | mean.only |
@@ -312,7 +315,7 @@ dataset_adjusted <- BERT(dataset_raw, method="ref")
 
 # Issues
 
-Please report any issues in the GitHub forum, the BioConductor forum or contact [the authors](mailto:schumany@hsu-hh.de,schlumbohm@hsu-hh.de) directly.
+Issues can be reported in the GitHub forum, the BioConductor forum or directly to [the authors](mailto:schumany@hsu-hh.de,schlumbohm@hsu-hh.de).
 
 # License
 
