@@ -277,8 +277,8 @@ These columns are automatically detected and integrated into the batch effect co
 ```{r}
 # import BERT
 library(BERT)
-# generate data with 30 batches, 60 features, 15 samples per batch, 15% missing values and 2 classes
-dataset_raw <- generate_dataset(features=60, batches=20, samplesperbatch=15, mvstmt=0.15, classes=2)
+# generate data with 5 batches, 60 features, 30 samples per batch, 15% missing values and 2 classes
+dataset_raw <- generate_dataset(features=60, batches=5, samplesperbatch=30, mvstmt=0.15, classes=2)
 # create covariable column with 2 possible values, e.g. male/female condition
 dataset_raw["Cov_1"] = sample(c(1,2), size=dim(dataset_raw)[1], replace=TRUE)
 # BERT
