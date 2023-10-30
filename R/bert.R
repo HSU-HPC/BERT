@@ -44,6 +44,8 @@ chunk_data <- function(data, n, backend="default"){
 #'
 #'@param chunks vector with the filenames to the temp files where the
 #'sub-matrices are stored
+#'@param biocbackend The BiocParallel backend to use. The default is the 
+#'currently registered backend.
 #'@param method the BE-correction method to use. Possible choices are ComBat
 #'and limma
 #'@param combatmode The mode to use for combat (ignored if limma).
@@ -53,13 +55,12 @@ chunk_data <- function(data, n, backend="default"){
 #'data chunks between the processes.
 #'@return dataframe with the adjusted matrix
 parallel_bert <- function(
-        chunks, 
+        chunks,
+        biocbackend = BiocParallel::bpparam(),
         method="ComBat", 
         combatmode=1,
         backend = "default"){
     
-    # parallel adjustment as far as possible for this chunk
-    biocbackend <- BiocParallel::bpparam()
     result <- BiocParallel::bplapply(chunks, function(chunk){
         if(backend=="file"){
             is_rank_1 <- FALSE#(chunk==chunks[1])
@@ -116,6 +117,9 @@ parallel_bert <- function(
     return(adjusted_data)
 }
 
+#' 
+#' Verifies that the input to BERT is valid.
+#' 
 #' @param data Matrix dataframe/SummarizedExperiment in the format (samples,
 #' features). 
 #' Additional column names are "Batch", "Cov_X" (were X may be any number),
@@ -123,9 +127,6 @@ parallel_bert <- function(
 #' @param cores The number of cores to use for parallel adjustment. Increasing
 #' this number leads to faster adjustment, especially on Linux machines. The
 #' default is 1.
-#' @param bpparameters Optional, default is NULL. If given, this should be
-#' a BiocParallel BiocParallelParam instance. Note, that BERT will register
-#' this instance as the default
 #' @param combatmode Integer, encoding the parameters to use for ComBat.
 #' 1 (default)    par.prior = TRUE, mean.only = FALSE
 #' 2              par.prior = TRUE, mean.only = TRUE
@@ -275,6 +276,9 @@ validate_bert_input <- function(data, cores, combatmode,
 #' @param covariatename A vector containing the names of columns with
 #' categorical covariables. The default is NULL, for which all columns with
 #' the pattern "Cov" will be selected.
+#' @param BPPARAM An instance of BiocParallelParam that will be used for
+#' parallelization. The default is null, in which case the value of 
+#' cores determines the behaviour of BERT.
 #' @param assayname User-defined string that specifies, which assay to select,
 #' if the input data is a SummarizedExperiment. The default is NULL.
 #' @return A matrix/dataframe/SummarizedExperiment mirroring the shape of the
@@ -300,6 +304,7 @@ BERT <- function(
         referencename="Reference",
         samplename="Sample",
         covariatename=NULL,
+        BPPARAM=NULL,
         assayname=NULL){
     
     # dummy code to suppress bioccheck warning
@@ -354,26 +359,31 @@ BERT <- function(
     
     user_defined_backend <- FALSE
     
-    if(is.null(cores)){
-        logging::loginfo(paste("Cores argument is not defined.",
-                               "Defaulting to BiocParallel::bpparam().",
-                               "Argumens corereduction",
+    if((is.null(cores)) || (!is.null(BPPARAM))){
+        logging::loginfo(paste("Cores argument is not defined or BPPARAM",
+                               "has been specified.",
+                               "Argument corereduction",
                                "will not be used."))
+        if(is.null(cores)){
+            BPPARAM <- BiocParallel::bpparam()
+            logging::loginfo("Using default BPPARAM")
+        }else{
+            logging::loginfo("Using specified BPPARAM")
+        }
         user_defined_backend <- TRUE
     }else{
         if(cores==1){
-            bpparameters <- BiocParallel::SerialParam()
+            BPPARAM <- BiocParallel::SerialParam()
             logging::loginfo("Set up sequential backend")
         }else{
             if(.Platform$OS.type == "windows"){
-                bpparameters <- BiocParallel::SnowParam(workers = cores)
+                BPPARAM <- BiocParallel::SnowParam(workers = cores)
             }else{
-                bpparameters <- BiocParallel::MulticoreParam(workers = cores)
+                BPPARAM <- BiocParallel::MulticoreParam(workers = cores)
             }
             logging::loginfo(paste("Set up parallel execution backend with",
                                    cores, "workers"))
         }
-        BiocParallel::register(bpparameters, default = TRUE)
         user_defined_backend <- FALSE
     }
     
@@ -396,8 +406,9 @@ BERT <- function(
         chunks <- chunk_data(data, cores, backend = backend)
         
         data <- parallel_bert(
-            chunks, 
-            method=method, 
+            chunks,
+            biocbackend=BPPARAM,
+            method=method,
             combatmode=combatmode,
             backend = backend)
         
@@ -409,11 +420,11 @@ BERT <- function(
         if((!user_defined_backend)){
             cores <- max(1, floor(cores/corereduction))
             if(.Platform$OS.type == "windows"){
-                bpparameters <- BiocParallel::SnowParam(workers = cores)
+                BPPARAM <- BiocParallel::SnowParam(workers = cores)
             }else{
-                bpparameters <- BiocParallel::MulticoreParam(workers = cores)
+                BPPARAM <- BiocParallel::MulticoreParam(workers = cores)
             }
-            BiocParallel::register(bpparameters, default = TRUE)
+            #BiocParallel::register(BPPARAM, default = TRUE)
         }
         
         sub_tree_counter <- sub_tree_counter+1

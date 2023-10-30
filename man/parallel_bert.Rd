@@ -4,11 +4,20 @@
 \alias{parallel_bert}
 \title{Adjusts all chunks of data (in parallel) as far as possible.}
 \usage{
-parallel_bert(chunks, method = "ComBat", combatmode = 1, backend = "default")
+parallel_bert(
+  chunks,
+  biocbackend = BiocParallel::bpparam(),
+  method = "ComBat",
+  combatmode = 1,
+  backend = "default"
+)
 }
 \arguments{
 \item{chunks}{vector with the filenames to the temp files where the
 sub-matrices are stored}
+
+\item{biocbackend}{The BiocParallel backend to use. The default is the
+currently registered backend.}
 
 \item{method}{the BE-correction method to use. Possible choices are ComBat
 and limma}

@@ -142,7 +142,7 @@ BERT offers a large number of parameters to customize the batch effect adjustmen
 The full function call, including all defaults is
 
 ``` r
-BERT(data, cores = NULL, combatmode = 1, corereduction=2, stopParBatches=2, backend="default", method="ComBat", qualitycontrol=TRUE, verify=TRUE, labelname="Label", batchname="Batch", referencename="Reference", samplename="Sample", covariatename=NULL, assayname=NULL)
+BERT(data, cores = NULL, combatmode = 1, corereduction=2, stopParBatches=2, backend="default", method="ComBat", qualitycontrol=TRUE, verify=TRUE, labelname="Label", batchname="Batch", referencename="Reference", samplename="Sample", covariatename=NULL, BPPARAM=NULL, assayname=NULL)
 ```
 
 In the following, we list the respective meaning of each parameter: - `data`: The input dataframe/matrix/SummarizedExperiment to adjust.
@@ -150,7 +150,7 @@ See [Data Preparation](#data-preparation) for detailed formatting instructions.
 - `data` The data for batch-effect correction.
 Must contain at least two samples per batch and 2 features.
 
--   `cores`: BERT uses [BiocParallel](https://bioconductor.org/packages/release/bioc/html/BiocParallel.html) for parallelization. By default, the method uses the current default `BPPARAM` registered by the user. If the user specified a specific number of cores, BERT registers a new instance of `BiocParallelParam`. Modifying this parameter can speed up the batch effect adjustment considerably, in particular for large datasets and on unix-based operating systems. A value between $2$ and $4$ is a reasonable choice for typical commodity hardware. Multi-node computations are not supported as of now.
+-   `cores`: BERT uses [BiocParallel](https://bioconductor.org/packages/release/bioc/html/BiocParallel.html) for parallelization. If the user specifies a value `cores`, BERT internally creates and uses a new instance of `BiocParallelParam`, which is however not exhibited to the user. Setting this parameter can speed up the batch effect adjustment considerably, in particular for large datasets and on unix-based operating systems. A value between $2$ and $4$ is a reasonable choice for typical commodity hardware. Multi-node computations are not supported as of now. If, however, `cores` is not specified, BERT will default to `BiocParallel::bpparam()`, which may have been set by the user or the system. Additionally, the user can directly specify a specific instance of `BiocParallelParam` to be used via the `BPPARAM` argument. 
 -   `combatmode` An integer that encodes the parameters to use for ComBat.
 
 | Value | par.prior | mean.only |
@@ -192,6 +192,8 @@ The value of this parameter will be ignored, if `method!="ComBat"`.
     The default is "Reference".
 
 -   `covariatename`: A vector containing the names of columns with categorical covariables.The default is NULL, in which case all column names are matched agains the pattern "Cov".
+
+-   `BPPARAM`: An instance of `BiocParallelParam` that will be used for parallelization. The default is null, in which case the value of `cores` determines the behaviour of BERT.
 
 -   `assayname`: If the user chooses to pass a `SummarizedExperiment` object, they need to specify the name of the assay that they want to apply BERT to here.
     BERT then returns the input `SummarizedExperiment` with an additional assay labeled `assayname_BERTcorrected`.
