@@ -307,8 +307,6 @@ BERT <- function(
         BPPARAM=NULL,
         assayname=NULL){
     
-    # dummy code to suppress bioccheck warning
-    typeof(BiocStyle::html_document)
     
     validate_bert_input(data, cores, combatmode, corereduction,
                         stopParBatches, backend, method, qualitycontrol,

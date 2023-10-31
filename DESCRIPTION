@@ -1,6 +1,6 @@
 Package: BERT
 Title: Hierarchical Batch-Effect Adjustment with Trees
-Version: 0.99.11
+Version: 0.99.12
 Authors@R: 
     c(person("Yannis", "Schumann", , "schumany@hsu-hh.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-2379-200X")),
@@ -31,12 +31,12 @@ Imports:
     logging (>= 0.10-108),
     sva (>= 3.38.0),
     SummarizedExperiment,
-    BiocStyle,
     methods,
     BiocParallel
 Suggests: 
     testthat (>= 3.0.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    BiocStyle
 Config/testthat/edition: 3
 VignetteBuilder: knitr
