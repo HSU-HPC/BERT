@@ -6,7 +6,7 @@
 \usage{
 parallel_bert(
   chunks,
-  BPPARAM = BiocParallel::bpparam(),
+  biocbackend = BiocParallel::bpparam(),
   method = "ComBat",
   combatmode = 1,
   backend = "default"
@@ -16,7 +16,7 @@ parallel_bert(
 \item{chunks}{vector with the filenames to the temp files where the
 sub-matrices are stored}
 
-\item{BPPARAM}{The BiocParallel backend to use. The default is the
+\item{biocbackend}{The BiocParallel backend to use. The default is the
 currently registered backend.}
 
 \item{method}{the BE-correction method to use. Possible choices are ComBat

@@ -44,7 +44,7 @@ chunk_data <- function(data, n, backend="default"){
 #'
 #'@param chunks vector with the filenames to the temp files where the
 #'sub-matrices are stored
-#'@param BPPARAM The BiocParallel backend to use. The default is the 
+#'@param biocbackend The BiocParallel backend to use. The default is the 
 #'currently registered backend.
 #'@param method the BE-correction method to use. Possible choices are ComBat
 #'and limma
@@ -56,7 +56,7 @@ chunk_data <- function(data, n, backend="default"){
 #'@return dataframe with the adjusted matrix
 parallel_bert <- function(
         chunks,
-        BPPARAM = BiocParallel::bpparam(),
+        biocbackend = BiocParallel::bpparam(),
         method="ComBat", 
         combatmode=1,
         backend = "default"){
@@ -109,7 +109,7 @@ parallel_bert <- function(
         }
         # return the adjusted split
         data
-    }, BPPARAM=BPPARAM)
+    }, BPPARAM=biocbackend)
     
     adjusted_data <- do.call("rbind", result)
     
@@ -405,7 +405,7 @@ BERT <- function(
         
         data <- parallel_bert(
             chunks,
-            BPPARAM=BPPARAM,
+            biocbackend=BPPARAM,
             method=method,
             combatmode=combatmode,
             backend = backend)
