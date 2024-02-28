@@ -10,7 +10,7 @@ BERT addresses the same fundamental data integration challenges than the [Harmon
 **Please note that our package _BERT_ is neither affiliated with nor related to _Bidirectional Encoder Representations from Transformers_ as published by Google.**
 
 ## Usage
-For details on how to use BERT, please refer to the [R-markdown vignette](https://github.com/HSU-HPC/BERT/blob/main/vignettes/BERT-Vignette.Rmd). Once accepted on Bioconductor, this page will be updated to refer to the HTML version of the vignette.
+For details on how to use BERT, please refer to the [vignette](https://bioconductor.org/packages/devel/bioc/vignettes/BERT/inst/doc/BERT-Vignette.html).
 
 ## Issues
 Please report any issues in the GitHub forum or contact [the authors](mailto:schumany@hsu-hh.de,schlumbohm@hsu-hh.de) directly.
@@ -21,4 +21,4 @@ This code is published under the GPLv3.0 License.
 
 ## Reference
 Please cite our manuscript, if you use BERT for your research:
-> Yannis Schumann, Simon Schlumbohm et al., BERT - Batch Effect Reduction Trees with Tolerance to Missing Values, 2023
+> Yannis Schumann, Simon Schlumbohm et al., BERT - Batch Effect Reduction Trees for Large-Scale Data Integration with Tolerance for Missing Values and Imbalanced Data, 2024 (in preparation)
