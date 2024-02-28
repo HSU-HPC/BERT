@@ -5,7 +5,7 @@ BERT <img src="https://user-images.githubusercontent.com/81758255/236138668-c422
  
 As such, BERT is a valuable preprocessing tool for data analysis workflows, in particular for proteomic data. By providing BERT via Bioconductor, we make this tool available to a wider research community. An accompanying research paper is currently under preparation and will be made public soon.
 
-BERT addresses the same fundamental data integration challenges than the [HarmonizR][https://github.com/HSU-HPC/HarmonizR] package, which is released on Bioconductor in November 2023. However, various algorithmic modications and optimizations of BERT provide better execution time and better data coverage than HarmonizR. Moreover, BERT offers a more user-friendly design and a less error-prone input format.
+BERT addresses the same fundamental data integration challenges than the [HarmonizR](https://github.com/HSU-HPC/HarmonizR) package, which has been released on Bioconductor in November 2023. However, various algorithmic modications and optimizations of BERT provide better execution time and better data coverage than HarmonizR. Moreover, BERT offers a more user-friendly design and a less error-prone input format.
  
 **Please note that our package _BERT_ is neither affiliated with nor related to _Bidirectional Encoder Representations from Transformers_ as published by Google.**
 
