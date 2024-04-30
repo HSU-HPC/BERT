@@ -1,6 +1,6 @@
 Package: BERT
 Title: Hierarchical Batch-Effect Adjustment with Trees
-Version: 0.99.16
+Version: 1.0.0
 Authors@R: 
     c(person("Yannis", "Schumann", , "schumany@hsu-hh.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-2379-200X")),
