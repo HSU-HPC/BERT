@@ -44,4 +44,4 @@ This code is published under the GPLv3.0 License.
 
 ## Reference
 Please cite our manuscript, if you use BERT for your research:
-> Yannis Schumann, Simon Schlumbohm et al., BERT - Batch Effect Reduction Trees for Large-Scale Data Integration with Tolerance for Missing Values and Imbalanced Data, 2024 (in preparation)
+> High Performance Data Integration for Large-Scale Analyses of Incomplete Omic Profiles Using Batch-Effect Reduction Trees (BERT)
