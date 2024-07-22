@@ -10,7 +10,7 @@ BERT addresses the same fundamental data integration challenges as [HarmonizR](h
 > This GitHub README provides only a brief introduction to BERT and we refer the reader to the [Bioconductor vignette](https://bioconductor.org/packages/release/bioc/html/BERT.html) for more details and more thorough explanations.
 
 ## System Requirements
-BERT supports all major operating systems, i.e. Linux (e.g., Ubuntu), Microsoft Windows (e.g., Windows 10 and Windows 11) and macOS (e.g., Monterey and Ventura). Further, it has been tested to work on all major CPU architectures (x86_64, x64, arm64). The Bioconductor version requires R version 4.4.
+BERT supports all major operating systems, i.e. Linux (e.g., Ubuntu 22.04 LTS), Microsoft Windows (e.g., Windows 10 and Windows 11) and macOS (e.g., Monterey and Ventura). Further, it has been tested to work on all major CPU architectures (x86_64, x64, arm64). The Bioconductor version requires R version 4.4. All other relevant software dependencies are specified in the source `DESCRIPTION` file along with their respective version numbers and will be installed automatically.
 
 ## Installation Guide
 To install BERT, start R (version "4.4") and enter
@@ -20,6 +20,8 @@ if (!require("BiocManager", quietly = TRUE))
 
 BiocManager::install("BERT")
 ```
+The execution time for the installation may vary greatly depending on your bandwidth and latency of your internet connection, as well as pre-installed R packages. At maximum, we expect an installation time of 20 minutes.
+
 ## Example Usage
 BERT provides functionality to generate simulated data with missing values and batch-effects. This data is correctly formatted for direct batch-effect correction using BERT.
 
@@ -28,6 +30,8 @@ library(BERT)
 dataset_raw <- generate_dataset(features=60, batches=10, samplesperbatch=10, mvstmt=0.1, classes=2)
 dataset_corrected <- BERT(dataset_raw)
 ```
+
+For this example, the average silhouette width (ASW) with respect to batch should decrease and vice versa for the ASW with respect to class label. At maximum, we expect a runtime of 20 seconds for the above example. 
 
 ## Usage
 For details on how to use BERT, please refer to the [vignette](https://bioconductor.org/packages/release/bioc/vignettes/BERT/inst/doc/BERT-Vignette.html).
