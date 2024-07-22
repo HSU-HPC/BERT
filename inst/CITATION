@@ -2,7 +2,7 @@ citHeader("To cite BERT in publications use:")
 
 citEntry(
   entry    = "Article",
-  title    = "BERT - Batch Effect Reduction Trees for Large-Scale Data Integration with Tolerance for Missing Values and Imbalanced Data",
+  title    = "High Performance Data Integration for Large-Scale Analyses of Incomplete Omic Profiles Using Batch-Effect Reduction Trees (BERT)",
   author   = "Yannis Schumann, Simon Schlumbohm et al.",
   journal  = "in preparation",
   year     = "2024",
@@ -11,6 +11,6 @@ citEntry(
   pages    = "",
   url      = "",
   textVersion = paste(
-  "Yannis Schumann, Simon Schlumbohm et al., BERT - Batch Effect Reduction Trees with Tolerance to Missing Values, 2023"
+  "Yannis Schumann, Simon Schlumbohm et al., High Performance Data Integration for Large-Scale Analyses of Incomplete Omic Profiles Using Batch-Effect Reduction Trees (BERT), 2024"
   )
 )
