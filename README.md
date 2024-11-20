@@ -37,7 +37,7 @@ For this example, the average silhouette width (ASW) with respect to batch shoul
 For details on how to use BERT, please refer to the [vignette](https://bioconductor.org/packages/release/bioc/vignettes/BERT/inst/doc/BERT-Vignette.html).
 
 ## Issues
-Please report any issues in the GitHub forum, the Bioconductor forum, or contact [the authors](mailto:schumany@hsu-hh.de,schlumbohm@hsu-hh.de) directly.
+Please report any issues in the GitHub forum, the Bioconductor forum, or contact [the authors](mailto:yannis.schumann@desy.de,schlumbohm@hsu-hh.de) directly.
 
 ## License
 This code is published under the GPLv3.0 License.

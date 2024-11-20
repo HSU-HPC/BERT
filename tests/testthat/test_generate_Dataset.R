@@ -101,6 +101,8 @@ test_that("deterministic generation of datasets works", {
   expect_equal(sum(classes[ds$Batch==1]==1), 4)
 })
 
+
+
 test_that("Ignores Batch, Label, Sample and covariable columns", {
   # generate dataset, 3 samples, 5 features
   y <- matrix(rnorm(3*5),3,5)
@@ -145,6 +147,17 @@ test_that("Test strip covariable 1", {
   y_nocov = strip_Covariable(y)
   
   expect_true(!("Cov_1" %in% names(y_nocov)))
+})
+
+test_that("generate_truncated_dataset works", {
+    # does not crash (bad style...)
+    data <- generate_truncated_dataset(100, 3, 10, 0.1,0.1, 2)
+    # should error if mvs truncated is string or in wrong interval
+    expect_error(generate_truncated_dataset(100, 3, 10, 0.1,"test", 2))
+    expect_error(generate_truncated_dataset(100, 3, 10, 0.1,-1, 2))
+    expect_error(generate_truncated_dataset(100, 3, 10, 0.1,1.2, 2))
+    # should error if absolute amount of missing values would be >100%
+    expect_error(generate_truncated_dataset(100, 3, 10, 0.8,0.8, 2))
 })
 
 

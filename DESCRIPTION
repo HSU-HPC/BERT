@@ -1,8 +1,8 @@
 Package: BERT
 Title: High Performance Data Integration for Large-Scale Analyses of Incomplete Omic Profiles Using Batch-Effect Reduction Trees (BERT)
-Version: 1.1.2
+Version: 1.2.1
 Authors@R: 
-    c(person("Yannis", "Schumann", , "schumany@hsu-hh.de", role = c("aut", "cre"),
+    c(person("Yannis", "Schumann", ,"schumany@hsu-hh.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-2379-200X")),
            person("Simon", "Schlumbohm", , "schlumbohm@hsu-hh.de", role = c("aut"),
            comment = c(ORCID = "0000-0002-0083-5142")))
@@ -15,7 +15,8 @@ RoxygenNote: 7.2.3
 biocViews:
     BatchEffect,
     Preprocessing,
-    ExperimentalDesign
+    ExperimentalDesign,
+    QualityControl
 URL: https://github.com/HSU-HPC/BERT/
 BugReports: https://github.com/HSU-HPC/BERT/issues
 License: GPL-3

@@ -336,6 +336,87 @@ generate_data_covariables <- function(
     return(finaldf)
 }
 
+#' Generate dataset using simple L/S model as in ComBat
+#' but introducing missing values in both TMT-like manner
+#' and truncating a fixed amount of numerical values (to simulate
+#' MNAR missing values from e.g. DDA acquisition in high-complexity
+#' spectra)
+#'
+#'The data will be already in the correct format for BERT.
+#'
+#' @param features Integer indicating the number of features
+#' (e.g. genes/proteins) in the dataset.
+#' @param batches Integer indicating the number of batches in the
+#'  dataset.
+#' @param samplesperbatch Integer indicating the number of of samples
+#' per batch.
+#' @param mvstmt Float (in [0,1)) indicating the fraction of missing values
+#' per batch. 
+#' @param mvstruncated Float (in [0,1)) indicating the fraction of missing
+#' values from truncation per batch. Sum of mvstruncated and mvstmt must
+#' not be >1. Truncation happens by setting the corresponding fraction
+#' of features with lowest mean expression values to NA.
+#' @param classes Integer indicating the number of classes in the dataset.
+#' @return A dataframe containing the simulated data.
+#' @examples
+#' # generate dataset with 1000 features, 5 batches, 10 samples per batch,
+#' 10% tmt like missing values, 10% truncation NAs and
+#' # two genotypes
+#' data = generate_truncated_dataset(1000,5,10, 0.1, 0.1, 2)
+#' @export
+generate_truncated_dataset <- function(
+        features, 
+        batches, 
+        samplesperbatch, 
+        mvstmt,
+        mvstruncated,
+        classes){
+    # generate complete data
+    complete_data <- generate_dataset(features,
+                                      batches,
+                                      samplesperbatch,
+                                      0,
+                                      classes)
+    # validate user input
+    if(!is.numeric(mvstmt) || !(0<=mvstmt && mvstmt<1)){
+        error_str <- paste("Parameter mvstmt in function",
+                           " generate_truncated_dataset must be in [0,1)")
+        stop(error_str)
+    }
+    if(!is.numeric(mvstruncated) || !(0<=mvstruncated && mvstruncated<1)){
+        error_str <- paste("Parameter mvstruncated in function",
+                           "generate_truncated_dataset must be in [0,1)")
+        stop(error_str)
+    }
+    if(mvstmt + mvstruncated>1){
+        error_str <- paste("Parameters mvstmt and mvstruncated",
+                           " must have sum in [0,1]")
+        stop(error_str)
+    }
+    # 1. get unique batches
+    batches <- unique(complete_data$Batch)
+    # 2. iterate over all batches
+    for(b in batches){
+        # select batch
+        batch <- complete_data[complete_data$Batch==b, ]
+        # introduce truncated data
+        mean_expression <- colMeans(batch[,!names(batch) %in% c("Batch",
+                                                                "Sample",
+                                                                "Label",
+                                                                "Reference")])
+        lowest_indices <- order(mean_expression)[1:round(
+            mvstruncated*features)]
+        complete_data[complete_data$Batch==b, lowest_indices] <- NA
+        # now introduce TMT-like missing values
+        all_indices <- 1:features
+        tmt_missing <- sample(all_indices[-lowest_indices],
+                              round(mvstmt*features), replace = FALSE)
+        complete_data[complete_data$Batch==b, tmt_missing] <- NA
+    }
+    # and return
+    return(complete_data)
+}
+
 #' Count the number of numeric features in this dataset. Columns labeled 
 #' "Batch", "Sample" or "Label" will be ignored.
 #'
