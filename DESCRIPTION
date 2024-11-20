@@ -2,7 +2,7 @@ Package: BERT
 Title: High Performance Data Integration for Large-Scale Analyses of Incomplete Omic Profiles Using Batch-Effect Reduction Trees (BERT)
 Version: 1.3.2
 Authors@R: 
-    c(person("Yannis", "Schumann", ,"schumany@hsu-hh.de", role = c("aut", "cre"),
+    c(person("Yannis", "Schumann", ,"yannis.schumann@desy.de", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-2379-200X")),
            person("Simon", "Schlumbohm", , "schlumbohm@hsu-hh.de", role = c("aut"),
            comment = c(ORCID = "0000-0002-0083-5142")))
