@@ -1,9 +1,9 @@
 # BERT: Batch-Effect Reduction Trees
 
-[![Build Status](https://bioconductor.org/shields/build/release/bioc/BERT.svg)]()
-[![Supported Platforms](https://bioconductor.org/shields/availability/release/BERT.svg)]()
-[![Bioconductor Availability](https://bioconductor.org/shields/years-in-bioc/BERT.svg)]()
-[![Last Update](https://bioconductor.org/shields/lastcommit/release/bioc/BERT.svg)]()
+[![Build Status](https://bioconductor.org/shields/build/release/bioc/BERT.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/BERT/)
+[![Supported Platforms](https://bioconductor.org/shields/availability/release/BERT.svg)](https://www.bioconductor.org/packages/release/bioc/html/BERT.html#archives)
+[![Bioconductor Availability](https://bioconductor.org/shields/years-in-bioc/BERT.svg)](https://www.bioconductor.org/packages/release/bioc/html/BERT.html#since)
+[![Last Update](https://bioconductor.org/shields/lastcommit/release/bioc/BERT.svg)](https://bioconductor.org/checkResults/devel/bioc-LATEST/BERT/)
 
 
 > Data from high-throughput technologies assessing global patterns of biomolecules (*omic* data), is often afflicted with missing values and with measurement-specific biases (batch-effects), that hinder the quantitative comparison of independently acquired datasets. This repository provides the BERT algorithm, a high-performance method for data integration of incomplete omic profiles.
