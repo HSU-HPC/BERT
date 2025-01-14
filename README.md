@@ -52,7 +52,9 @@ dataset_corrected <- BERT(dataset_raw)
 
 # Support
 
-Users may ask for assistance via the [Bioconductor support site](https://support.bioconductor.org/tag/bert/). Bug reports may be filed via the [Issues](https://github.com/HSU-HPC/BERT/issues) tab of this repository. For confidential or security-related problems, please send an email to _yannis_ [dot] _schumann_ [at] _desy_ [dot] _de_ .
+Users may ask for assistance via the [Bioconductor support site](https://support.bioconductor.org/tag/bert/). Bug reports may be filed via the [Issues](https://github.com/HSU-HPC/BERT/issues) tab of this repository. For confidential or security-related problems, please send an email to 
+
+_yannis_ [dot] _schumann_ [at] _desy_ [dot] _de_ .
 
 # License
 
@@ -64,4 +66,4 @@ Citations make research visible. If you use BERT for your research, please cite 
 
 - Computational Methods for Data Integration and Imputation of Missing Values in Omics Datasets, Y. Schumann Gocke / A. Gocke / J. E. Neumann, 2024-12 PROTEOMICS, Wiley, [https://doi.org/10.1002/pmic.202400100](https://doi.org/10.1002/pmic.202400100)
 
-[^1] On Ubuntu 24.04, a complete list of depencies would be: _wget_, _curl _, _build-essential_, _libssl-dev_, _libcurl4-openssl-dev_, _pkg-config_, _git_, _ca-certificates_, _libxml2_, _libxml2-dev_, _gnupg_, _software-properties-common_, _libfontconfig1-dev_, _libharfbuzz-dev_, _libfribidi-dev_, _libfreetype6-dev_, _libpng-dev_, _libtiff5-dev_, _libjpeg-dev_
+[^1]: On Ubuntu 24.04, a complete list of depencies would be: _wget_, _curl _, _build-essential_, _libssl-dev_, _libcurl4-openssl-dev_, _pkg-config_, _git_, _ca-certificates_, _libxml2_, _libxml2-dev_, _gnupg_, _software-properties-common_, _libfontconfig1-dev_, _libharfbuzz-dev_, _libfribidi-dev_, _libfreetype6-dev_, _libpng-dev_, _libtiff5-dev_, _libjpeg-dev_
