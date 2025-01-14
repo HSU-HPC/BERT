@@ -1,47 +1,67 @@
-BERT <img src="https://user-images.githubusercontent.com/81758255/236138668-c422b935-ed7f-4f2c-82a5-69503d8416f4.png" width="120px" align="right" />
-===========
+# BERT: Batch-Effect Reduction Trees
 
- BERT (Batch-Effect Reduction Trees) offers flexible and efficient batch-effect correction of *omics* data, while providing maximum tolerance to missing values. As such, BERT is a valuable preprocessing tool for data analysis workflows. By providing BERT via Bioconductor, we make this tool available to a wider research community. An accompanying research paper is currently under preparation and will be made public soon.
+[![Build Status](https://bioconductor.org/shields/build/release/bioc/BERT.svg)]()
+[![Supported Platforms](https://bioconductor.org/shields/availability/release/BERT.svg)]()
+[![Bioconductor Availability](https://bioconductor.org/shields/years-in-bioc/BERT.svg)]()
+[![Last Update](https://bioconductor.org/shields/lastcommit/release/bioc/BERT.svg)]()
 
-BERT addresses the same fundamental data integration challenges as [HarmonizR](https://github.com/HSU-HPC/HarmonizR) package, which has been released on Bioconductor in November 2023. However, various algorithmic modications and optimizations of BERT provide better execution time, better data coverage and enhanced flexibility compared to *HarmonizR*. Moreover, BERT offers a more user-friendly design and a less error-prone input format.
- 
-**Please note that our package _BERT_ is neither affiliated with nor related to _Bidirectional Encoder Representations from Transformers_ as published by Google.**
 
-> This GitHub README provides only a brief introduction to BERT and we refer the reader to the [Bioconductor vignette](https://bioconductor.org/packages/release/bioc/html/BERT.html) for more details and more thorough explanations.
+> Data from high-throughput technologies assessing global patterns of biomolecules (*omic* data), is often afflicted with missing values and with measurement-specific biases (batch-effects), that hinder the quantitative comparison of independently acquired datasets. This repository provides the BERT algorithm, a high-performance method for data integration of incomplete omic profiles.
 
-## System Requirements
-BERT supports all major operating systems, i.e. Linux (e.g., Ubuntu 22.04 LTS), Microsoft Windows (e.g., Windows 10 and Windows 11) and macOS (e.g., Monterey and Ventura). Further, it has been tested to work on all major CPU architectures (x86_64, x64, arm64). The Bioconductor version requires R version 4.4. All other relevant software dependencies are specified in the source `DESCRIPTION` file along with their respective version numbers and will be installed automatically.
+> [!IMPORTANT]
+> This repository is primarily intended for development purposes. For typical users, BERT is provided via [Bioconductor](https://www.bioconductor.org/packages/release/bioc/html/BERT.html). Note that repository badges refer to the release version of BERT, which may be multiple commits behind the source code provided here. The latest CI/CD results for BERT may be obtained [here](https://www.bioconductor.org/packages/devel/bioc/html/BERT.html).
 
-## Installation Guide
-To install BERT, start R (version "4.4") and enter
+> [!WARNING]
+> The R package provided here is neither affiliated with nor related to Bidirectional Encoder Representations from Transformers as published by Devlin et al in 2019 (_arXiv:1810.04805_).
+
+# Installation
+
+> [!TIP]
+> It is recommended to install BERT via Bioconductor as described [here](https://www.bioconductor.org/packages/release/bioc/html/BERT.html).
+
+For development purposes, the BERT package can be installed directly from this repository using _devtools_.
+
 ```R
+if (!require("devtools", quietly = TRUE))
+    install.packages("devtools")
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-
-BiocManager::install("BERT")
+BiocManager::install(c('S4Vectors', 'S4Arrays', 'XVector', 'genefilter', 'SparseArray'))
+devtools::install_github('HSU-HPC/BERT')
 ```
-The execution time for the installation may vary greatly depending on your bandwidth and latency of your internet connection, as well as pre-installed R packages. At maximum, we expect an installation time of 20 minutes.
 
-## Example Usage
-BERT provides functionality to generate simulated data with missing values and batch-effects. This data is correctly formatted for direct batch-effect correction using BERT.
+Please compare the installed version of R to the required version for Bioconductor and install all build dependencies if compilation from source is required for your target[^1].
+
+
+# Usage
+
+The BERT library is designed to offer high user friendliness whilst providing maximum flexibility. The following example demonstrates how to use the software on a simulated dataset with batch-effects and missing values:
+
 
 ```R
+# import library
 library(BERT)
+# simulate dataset with 10% missing values
 dataset_raw <- generate_dataset(features=60, batches=10, samplesperbatch=10, mvstmt=0.1, classes=2)
+# apply BERT with default arguments
 dataset_corrected <- BERT(dataset_raw)
 ```
 
-For this example, the average silhouette width (ASW) with respect to batch should decrease and vice versa for the ASW with respect to class label. At maximum, we expect a runtime of 20 seconds for the above example. 
+> [!TIP]
+> A detailed explanation of all available parameters, their default values and optimal configurations for typical scenarios can be found in the [Bioconductor vignette](https://www.bioconductor.org/packages/release/bioc/vignettes/BERT/inst/doc/BERT-Vignette.html).
 
-## Usage
-For details on how to use BERT, please refer to the [vignette](https://bioconductor.org/packages/release/bioc/vignettes/BERT/inst/doc/BERT-Vignette.html).
+# Support
 
-## Issues
-Please report any issues in the GitHub forum, the Bioconductor forum, or contact [the authors](mailto:yannis.schumann@desy.de,schlumbohm@hsu-hh.de) directly.
+Users may ask for assistance via the [Bioconductor support site](https://support.bioconductor.org/tag/bert/). Bug reports may be filed via the [Issues](https://github.com/HSU-HPC/BERT/issues) tab of this repository. For confidential or security-related problems, please send an email to _yannis_ [dot] _schumann_ [at] _desy_ [dot] _de_ .
 
-## License
+# License
+
 This code is published under the GPLv3.0 License.
 
-## Reference
-Please cite our manuscript, if you use BERT for your research:
-> High Performance Data Integration for Large-Scale Analyses of Incomplete Omic Profiles Using Batch-Effect Reduction Trees (BERT)
+# References
+
+Citations make research visible. If you use BERT for your research, please cite the following publication:
+
+- Computational Methods for Data Integration and Imputation of Missing Values in Omics Datasets, Y. Schumann Gocke / A. Gocke / J. E. Neumann, 2024-12 PROTEOMICS, Wiley, [https://doi.org/10.1002/pmic.202400100](https://doi.org/10.1002/pmic.202400100)
+
+[^1] On Ubuntu 24.04, a complete list of depencies would be: _wget_, _curl _, _build-essential_, _libssl-dev_, _libcurl4-openssl-dev_, _pkg-config_, _git_, _ca-certificates_, _libxml2_, _libxml2-dev_, _gnupg_, _software-properties-common_, _libfontconfig1-dev_, _libharfbuzz-dev_, _libfribidi-dev_, _libfreetype6-dev_, _libpng-dev_, _libtiff5-dev_, _libjpeg-dev_
