@@ -1,16 +1,15 @@
 citHeader("To cite BERT in publications use:")
 
-citEntry(
-  entry    = "Article",
-  title    = "High Performance Data Integration for Large-Scale Analyses of Incomplete Omic Profiles Using Batch-Effect Reduction Trees (BERT)",
-  author   = "Yannis Schumann, Simon Schlumbohm et al.",
-  journal  = "in preparation",
-  year     = "2024",
-  volume   = "",
-  number   = "",
-  pages    = "",
-  url      = "",
-  textVersion = paste(
-  "Yannis Schumann, Simon Schlumbohm et al., High Performance Data Integration for Large-Scale Analyses of Incomplete Omic Profiles Using Batch-Effect Reduction Trees (BERT), 2024"
-  )
-)
+bibentry(
+  key = "Schumann2024a",
+  bibtype = "Article",
+  doi     = "10.1002/pmic.202400100",
+  url       = "https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/10.1002/pmic.202400100"
+  author    = c(person("Yannis", Schumann), person("Antonia", Gocke), person("Julia E.", "Neumann")),
+  journal   = "PROTEOMICS",
+  title     "Computational Methods for Data Integration and Imputation of Missing Values in Omics Datasets",
+  year      = "2024",
+  issn      = "1615-9861",
+  month     = "dec",
+  publisher = "Wiley",
+}
