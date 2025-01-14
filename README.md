@@ -12,7 +12,7 @@
 > This repository is primarily intended for development purposes. For typical users, BERT is provided via [Bioconductor](https://www.bioconductor.org/packages/release/bioc/html/BERT.html). Note that repository badges refer to the release version of BERT, which may be multiple commits behind the source code provided here. The latest CI/CD results for BERT may be obtained [here](https://www.bioconductor.org/packages/devel/bioc/html/BERT.html).
 
 > [!WARNING]
-> The R package provided here is neither affiliated with nor related to Bidirectional Encoder Representations from Transformers as published by Devlin et al in 2019 (_arXiv:1810.04805_).
+> The R package provided here is neither affiliated with nor related to _Bidirectional Encoder Representations from Transformers_ as published by Devlin et al in 2019 (_arXiv:1810.04805_).
 
 # Installation
 
