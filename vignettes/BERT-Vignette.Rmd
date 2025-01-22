@@ -327,7 +327,7 @@ This code is published under the GPLv3.0 License and is available for non-commer
 
 # Reference
 
-Please cite our manuscript, if you use BERT for your research: *Yannis Schumann, Simon Schlumbohm et al., BERT - Batch Effect Reduction Trees with Missing Value Tolerance, 2023*
+Please cite our manuscript, if you use BERT for your research: *Schumann Y, Gocke A, Neumann J (2024). Computational Methods for Data Integration and Imputation of Missing Values in Omics Datasets. PROTEOMICS. ISSN 1615-9861, doi:10.1002/pmic.202400100 *
 
 # Session Info
 

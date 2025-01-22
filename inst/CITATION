@@ -4,12 +4,12 @@ bibentry(
   key = "Schumann2024a",
   bibtype = "Article",
   doi     = "10.1002/pmic.202400100",
-  url       = "https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/10.1002/pmic.202400100"
-  author    = c(person("Yannis", Schumann), person("Antonia", Gocke), person("Julia E.", "Neumann")),
+  url       = "https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/10.1002/pmic.202400100",
+  author    = c(person("Yannis", "Schumann"), person("Antonia", "Gocke"), person("Julia E.", "Neumann")),
   journal   = "PROTEOMICS",
-  title     "Computational Methods for Data Integration and Imputation of Missing Values in Omics Datasets",
+  title     = "Computational Methods for Data Integration and Imputation of Missing Values in Omics Datasets",
   year      = "2024",
   issn      = "1615-9861",
   month     = "dec",
-  publisher = "Wiley",
-}
+  publisher = "Wiley"
+)
