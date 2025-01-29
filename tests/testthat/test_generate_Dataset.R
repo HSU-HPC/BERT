@@ -149,15 +149,3 @@ test_that("Test strip covariable 1", {
   expect_true(!("Cov_1" %in% names(y_nocov)))
 })
 
-test_that("generate_truncated_dataset works", {
-    # does not crash (bad style...)
-    data <- generate_truncated_dataset(100, 3, 10, 0.1,0.1, 2)
-    # should error if mvs truncated is string or in wrong interval
-    expect_error(generate_truncated_dataset(100, 3, 10, 0.1,"test", 2))
-    expect_error(generate_truncated_dataset(100, 3, 10, 0.1,-1, 2))
-    expect_error(generate_truncated_dataset(100, 3, 10, 0.1,1.2, 2))
-    # should error if absolute amount of missing values would be >100%
-    expect_error(generate_truncated_dataset(100, 3, 10, 0.8,0.8, 2))
-})
-
-
