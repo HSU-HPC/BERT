@@ -5,6 +5,7 @@
 [![Bioconductor Availability](https://bioconductor.org/shields/years-in-bioc/BERT.svg)](https://www.bioconductor.org/packages/release/bioc/html/BERT.html#since)
 [![Last Update](https://bioconductor.org/shields/lastcommit/release/bioc/BERT.svg)](https://bioconductor.org/checkResults/devel/bioc-LATEST/BERT/)
 [![DOI](https://zenodo.org/badge/598995126.svg)](https://doi.org/10.5281/zenodo.15607757)
+[![DOI](https://zenodo.org/badge/598995126.svg)](https://doi.org/10.5281/zenodo.15607757)
 
 > Data from high-throughput technologies assessing global patterns of biomolecules (*omic* data), is often afflicted with missing values and with measurement-specific biases (batch-effects), that hinder the quantitative comparison of independently acquired datasets. This repository provides the BERT algorithm, a high-performance method for data integration of incomplete omic profiles.
 
