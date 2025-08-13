@@ -54,7 +54,10 @@ dataset_corrected <- BERT(dataset_raw)
 
 Users may ask for assistance via the [Bioconductor support site](https://support.bioconductor.org/tag/bert/). Bug reports may be filed via the [Issues](https://github.com/HSU-HPC/BERT/issues) tab of this repository. For confidential or security-related problems, please send an email to 
 
-_yannis_ [dot] _schumann_ [at] _desy_ [dot] _de_ .
+_ju_ [dot] _neumann_ [at] _uke_ [dot] _de_ or _philipp_ [dot] _neumann_ [at] _desy_ [dot] _de_
+
+> [!WARNING]
+> As of October 2025, this repository will be no longer actively maintained. 
 
 # License
 
