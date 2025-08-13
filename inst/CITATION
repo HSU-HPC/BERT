@@ -13,3 +13,16 @@ bibentry(
   month     = "dec",
   publisher = "Wiley"
 )
+
+bibentry(
+  key = "Schumann2025a",
+  bibtype = "Article",
+  doi     = "10.1038/s41467-025-62237-4",
+  url       = "https://link.springer.com/article/10.1038/s41467-025-62237-4",
+  author    = c(person("Yannis", "Schumann"), person("Simon", "Schlumbohm"), person("Julia E.", "Neumann"), person("Philipp", "Neumann")),
+  journal   = "Nature Communications",
+  title     = "High performance data integration for large-scale analyses of incomplete Omic profiles using Batch-Effect Reduction Trees (BERT)",
+  year      = "2025",
+  month     = "aug",
+  publisher = "Springer"
+)
