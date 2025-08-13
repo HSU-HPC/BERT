@@ -65,5 +65,6 @@ This code is published under the GPLv3.0 License.
 Citations make research visible. If you use BERT for your research, please cite the following publication:
 
 - Computational Methods for Data Integration and Imputation of Missing Values in Omics Datasets, Y. Schumann Gocke / A. Gocke / J. E. Neumann, 2024-12 PROTEOMICS, Wiley, [https://doi.org/10.1002/pmic.202400100](https://doi.org/10.1002/pmic.202400100)
+- Schumann, Y., Schlumbohm, S., Neumann, J.E. et al. High performance data integration for large-scale analyses of incomplete Omic profiles using Batch-Effect Reduction Trees (BERT). Nat Commun 16, 7104 (2025). https://doi.org/10.1038/s41467-025-62237-4
 
 [^1]: On Ubuntu 24.04, a complete list of depencies would be: _wget_, _curl _, _build-essential_, _libssl-dev_, _libcurl4-openssl-dev_, _pkg-config_, _git_, _ca-certificates_, _libxml2_, _libxml2-dev_, _gnupg_, _software-properties-common_, _libfontconfig1-dev_, _libharfbuzz-dev_, _libfribidi-dev_, _libfreetype6-dev_, _libpng-dev_, _libtiff5-dev_, _libjpeg-dev_
